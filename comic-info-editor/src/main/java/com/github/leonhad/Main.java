@@ -1,7 +1,10 @@
 package com.github.leonhad;
 
+import com.github.leonhad.forms.MainForm;
+
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello, World!");
+        var frame = new MainForm();
+        frame.setVisible(true);
     }
 }
