@@ -50,23 +50,23 @@ public class MainForm extends JFrame {
 
         var optionsPanel = new JPanel();
         optionsPanel.setPreferredSize(new Dimension(200, 1));
-        var gridbag = new GridBagLayout();
+        var gridBag = new GridBagLayout();
         var c = new GridBagConstraints();
 
-        optionsPanel.setLayout(gridbag);
+        optionsPanel.setLayout(gridBag);
 
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 0.0;
         c.insets = new Insets(5, 5, 5, 5);
         c.gridwidth = GridBagConstraints.RELATIVE;
         var t = new JLabel("Name");
-        gridbag.setConstraints(t, c);
+        gridBag.setConstraints(t, c);
         optionsPanel.add(t);
 
         c.gridwidth  = GridBagConstraints.REMAINDER;
         c.weightx = 1.0;
         var text = new JTextField();
-        gridbag.setConstraints(text, c);
+        gridBag.setConstraints(text, c);
         optionsPanel.add(text);
 
         //principal.add(optionsPanel, BorderLayout.EAST);
