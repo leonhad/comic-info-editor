@@ -60,7 +60,7 @@ public class InfoForm extends JDialog {
 
     private final JComboBox<ISOLanguage> languageIso = new JComboBox<>();
 
-    private final JComboBox<String> format = new JComboBox<>();
+    private final JTextField format = new JTextField();
 
     private final JComboBox<String> ageRating = new JComboBox<>();
 
@@ -121,8 +121,8 @@ public class InfoForm extends JDialog {
         genre.setText(metadata.getGenre());
         tags.setText(metadata.getTags());
         web.setText(metadata.getWeb());
+        format.setText(metadata.getFormat());
         selectItem(languageIso, v -> v.getIsoCode().equals(metadata.getLanguageIso()));
-        selectItem(format, v -> v.equals(metadata.getFormat()));
         selectItem(ageRating, v -> v.equals(metadata.getAgeRating()));
         selectItem(blackAndWhite, v -> v.getCode().equals(metadata.getBlackAndWhite()));
         selectItem(manga, v -> v.getCode().equals(metadata.getManga()));
@@ -167,7 +167,7 @@ public class InfoForm extends JDialog {
         metadata.setTags(tags.getText());
         metadata.setWeb(web.getText());
         metadata.setLanguageIso(Optional.ofNullable((ISOLanguage) languageIso.getSelectedItem()).map(ISOLanguage::getIsoCode).orElse(null));
-        metadata.setFormat((String)format.getSelectedItem());
+        metadata.setFormat(format.getText());
         metadata.setAgeRating((String)ageRating.getSelectedItem());
         metadata.setBlackAndWhite(Optional.ofNullable((CodeValue) blackAndWhite.getSelectedItem()).map(CodeValue::getCode).orElse(null));
         metadata.setManga(Optional.ofNullable((CodeValue) manga.getSelectedItem()).map(CodeValue::getCode).orElse(null));
@@ -203,9 +203,6 @@ public class InfoForm extends JDialog {
         summary.setRows(4);
         summary.setBorder(BorderFactory.createEtchedBorder());
 
-        format.setEditable(true);
-        format.setSelectedItem("");
-
         var panel = new JPanel(new MigLayout("fill", "[][grow][][grow]", ""));
         panel.add(new JLabel("Title:"));
         panel.add(title, "span, grow, wrap");
@@ -223,7 +220,7 @@ public class InfoForm extends JDialog {
         panel.add(month, "grow, wrap");
         panel.add(new JLabel("Day:"));
         panel.add(day, "grow");
-        panel.add(new JLabel("Language ISO:"));
+        panel.add(new JLabel("Language:"));
         panel.add(languageIso, "grow, wrap");
         panel.add(new JLabel("Writer:"));
         panel.add(writer, "span, grow, wrap");
@@ -274,27 +271,6 @@ public class InfoForm extends JDialog {
     }
 
     private void initFieldData() {
-        format.addItem("");
-        format.addItem("Special");
-        format.addItem("Reference");
-        format.addItem("Director's Cut");
-        format.addItem("Box Set");
-        format.addItem("Box-Set");
-        format.addItem("Annual");
-        format.addItem("Anthology");
-        format.addItem("Epilogue");
-        format.addItem("One Shot");
-        format.addItem("One-Shot");
-        format.addItem("Prologue");
-        format.addItem("TPB");
-        format.addItem("Trade Paper Back");
-        format.addItem("Omnibus");
-        format.addItem("Compendium");
-        format.addItem("Absolute");
-        format.addItem("Graphic Novel");
-        format.addItem("GN");
-        format.addItem("FCBD");
-
         ageRating.addItem("Unknown");
         ageRating.addItem("Rating Pending");
         ageRating.addItem("Early Childhood");
