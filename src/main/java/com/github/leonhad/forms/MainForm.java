@@ -9,6 +9,7 @@ import com.github.leonhad.utils.OSUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 
@@ -19,6 +20,8 @@ public class MainForm extends JFrame {
     private final ImageComponent imageComponent = new ImageComponent();
 
     private final JMenuItem saveMenu = new JMenuItem("Save");
+
+    private final JMenuItem saveAsMenu = new JMenuItem("Save As...");
 
     private final JMenu readMenu = getReadMenu();
 
@@ -63,7 +66,7 @@ public class MainForm extends JFrame {
         var editInfo = new JMenuItem("Edit Document");
         editInfo.setMnemonic(KeyEvent.VK_D);
         editInfo.setAccelerator(KeyStroke.getKeyStroke('I', Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
-        editInfo.addActionListener(e -> new InfoForm(this, document));
+        editInfo.addActionListener(e -> new InfoForm(this, document.getMetadata()));
         menu.add(editInfo);
 
         return menu;
@@ -116,6 +119,11 @@ public class MainForm extends JFrame {
         saveMenu.setAccelerator(KeyStroke.getKeyStroke('S', Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         saveMenu.addActionListener(e -> save());
         menu.add(saveMenu);
+
+        saveAsMenu.setMnemonic('A');
+        saveAsMenu.setAccelerator(KeyStroke.getKeyStroke('S', Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx() + InputEvent.SHIFT_DOWN_MASK));
+        saveAsMenu.addActionListener(e -> saveAs());
+        menu.add(saveAsMenu);
 
         if (!OSUtils.isOSX()) {
             menu.add(new JSeparator());
@@ -205,10 +213,36 @@ public class MainForm extends JFrame {
 
     private void save() {
 
+        document.save();
+    }
+
+    private void saveAs() {
+        var savePanel = new JFileChooser("Save As...");
+
+        var allSupportedFilter = new AllSupportedFilter();
+        savePanel.addChoosableFileFilter(allSupportedFilter);
+        savePanel.addChoosableFileFilter(new CbzFilter());
+        savePanel.addChoosableFileFilter(new ZipFilter());
+        savePanel.setFileFilter(allSupportedFilter);
+
+        savePanel.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+        if (savePanel.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            var selectedFile = savePanel.getSelectedFile();
+            if (selectedFile.exists()) {
+                var confirm = JOptionPane.showConfirmDialog(this, "The file " + selectedFile.getName() + " already exists\nConfirm override?", "Confirm Save As...", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    document.saveAs(selectedFile);
+                }
+            } else {
+                document.saveAs(selectedFile);
+            }
+        }
     }
 
     private void disableMenus() {
         saveMenu.setEnabled(false);
+        saveAsMenu.setEnabled(false);
 
         for (var i = 0; i < readMenu.getItemCount(); i++) {
             readMenu.getItem(i).setEnabled(false);
@@ -221,6 +255,7 @@ public class MainForm extends JFrame {
 
     private void enableMenus() {
         saveMenu.setEnabled(true);
+        saveAsMenu.setEnabled(true);
 
         for (var i = 0; i < readMenu.getItemCount(); i++) {
             readMenu.getItem(i).setEnabled(true);

@@ -1,7 +1,7 @@
 package com.github.leonhad.forms;
 
-import com.github.leonhad.components.LevelBar;
-import com.github.leonhad.document.Document;
+import com.github.leonhad.components.RatingComponent;
+import com.github.leonhad.document.Metadata;
 import com.github.leonhad.utils.CodeValue;
 import com.github.leonhad.utils.ISOLanguage;
 import net.miginfocom.swing.MigLayout;
@@ -9,10 +9,12 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.function.Function;
 
 public class InfoForm extends JDialog {
 
-    private final Document document;
+    private final Metadata metadata;
 
     private final JTextField title = new JTextField();
 
@@ -74,11 +76,11 @@ public class InfoForm extends JDialog {
 
     private final JTextField scanInformation = new JTextField();
 
-    private final LevelBar communityRating = new LevelBar();
+    private final RatingComponent communityRating = new RatingComponent();
 
-    public InfoForm(Frame parent, Document document) {
+    public InfoForm(Frame parent, Metadata metadata) {
         super(parent);
-        this.document = document;
+        this.metadata = metadata;
 
         setTitle("Edit document information");
 
@@ -86,17 +88,123 @@ public class InfoForm extends JDialog {
 
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(createFieldPanel(), BorderLayout.CENTER);
+        getContentPane().add(createOptionsPanel(), BorderLayout.SOUTH);
+
         setMinimumSize(new Dimension(600, 1));
         pack();
 
         setLocationRelativeTo(parent);
+
+        loadMetadata();
         setVisible(true);
+    }
+
+    private void loadMetadata() {
+        title.setText(metadata.getTitle());
+        series.setText(metadata.getSeries());
+        number.setText(metadata.getNumber());
+        count.setText(metadata.getCount());
+        summary.setText(metadata.getSummary());
+        year.setText(metadata.getYear());
+        month.setText(metadata.getMonth());
+        day.setText(metadata.getDay());
+        writer.setText(metadata.getWriter());
+        penciller.setText(metadata.getPenciller());
+        inker.setText(metadata.getInker());
+        colorist.setText(metadata.getColorist());
+        letterer.setText(metadata.getLetterer());
+        coverArtist.setText(metadata.getCoverArtist());
+        editor.setText(metadata.getEditor());
+        translator.setText(metadata.getTranslator());
+        publisher.setText(metadata.getPublisher());
+        imprint.setText(metadata.getImprint());
+        genre.setText(metadata.getGenre());
+        tags.setText(metadata.getTags());
+        web.setText(metadata.getWeb());
+        selectItem(languageIso, v -> v.getIsoCode().equals(metadata.getLanguageIso()));
+        selectItem(format, v -> v.equals(metadata.getFormat()));
+        selectItem(ageRating, v -> v.equals(metadata.getAgeRating()));
+        selectItem(blackAndWhite, v -> v.getCode().equals(metadata.getBlackAndWhite()));
+        selectItem(manga, v -> v.getCode().equals(metadata.getManga()));
+
+        characters.setText(metadata.getCharacters());
+        teams.setText(metadata.getTeams());
+        locations.setText(metadata.getLocations());
+        scanInformation.setText(metadata.getScanInformation());
+        communityRating.setText(metadata.getCommunityRating());
+    }
+
+    private <T> void selectItem(JComboBox<T> item, Function<T, Boolean> equals) {
+        for (int i = 0; i < item.getItemCount(); i++) {
+            T t = item.getItemAt(i);
+            if (equals.apply(t)) {
+                item.setSelectedIndex(i);
+                break;
+            }
+        }
+    }
+
+    private void confirm() {
+        metadata.setTitle(title.getText());
+        metadata.setSeries(series.getText());
+        metadata.setNumber(number.getText());
+        metadata.setCount(count.getText());
+        metadata.setSummary(summary.getText());
+        metadata.setYear(year.getText());
+        metadata.setMonth(month.getText());
+        metadata.setDay(day.getText());
+        metadata.setWriter(writer.getText());
+        metadata.setPenciller(penciller.getText());
+        metadata.setInker(inker.getText());
+        metadata.setColorist(colorist.getText());
+        metadata.setLetterer(letterer.getText());
+        metadata.setCoverArtist(coverArtist.getText());
+        metadata.setEditor(editor.getText());
+        metadata.setTranslator(translator.getText());
+        metadata.setPublisher(publisher.getText());
+        metadata.setImprint(imprint.getText());
+        metadata.setGenre(genre.getText());
+        metadata.setTags(tags.getText());
+        metadata.setWeb(web.getText());
+        metadata.setLanguageIso(Optional.ofNullable((ISOLanguage) languageIso.getSelectedItem()).map(ISOLanguage::getIsoCode).orElse(null));
+        metadata.setFormat((String)format.getSelectedItem());
+        metadata.setAgeRating((String)ageRating.getSelectedItem());
+        metadata.setBlackAndWhite(Optional.ofNullable((CodeValue) blackAndWhite.getSelectedItem()).map(CodeValue::getCode).orElse(null));
+        metadata.setManga(Optional.ofNullable((CodeValue) manga.getSelectedItem()).map(CodeValue::getCode).orElse(null));
+        metadata.setCharacters(characters.getText());
+        metadata.setTeams(teams.getText());
+        metadata.setLocations(locations.getText());
+        metadata.setScanInformation(scanInformation.getText());
+        metadata.setCommunityRating(communityRating.getText());
+
+        dispose();
+    }
+
+    private JPanel createOptionsPanel() {
+        var panel = new JPanel();
+        panel.setLayout(new FlowLayout());
+
+        var confirm = new JButton("Confirm");
+        confirm.addActionListener(e -> confirm());
+        confirm.setMnemonic('f');
+        panel.add(confirm);
+
+        var cancel = new JButton("Cancel");
+        cancel.addActionListener(e -> this.dispose());
+        cancel.setActionCommand("cancel");
+        cancel.setMnemonic('c');
+        panel.add(cancel);
+
+        return panel;
     }
 
     private JPanel createFieldPanel() {
         summary.setLineWrap(true);
         summary.setRows(4);
         summary.setBorder(BorderFactory.createEtchedBorder());
+
+        format.setEditable(true);
+        format.setSelectedItem("");
 
         var panel = new JPanel(new MigLayout("fill", "[][grow][][grow]", ""));
         panel.add(new JLabel("Title:"));
@@ -166,6 +274,7 @@ public class InfoForm extends JDialog {
     }
 
     private void initFieldData() {
+        format.addItem("");
         format.addItem("Special");
         format.addItem("Reference");
         format.addItem("Director's Cut");

@@ -12,6 +12,7 @@ import java.util.zip.ZipFile;
 
 public class Document {
 
+    private Metadata metadata;
     private final File file;
     private int index;
     private BufferedImage currentImage;
@@ -38,6 +39,7 @@ public class Document {
 
         imageList.stream().findFirst().orElseThrow(() -> new IOException("No image found"));
         loadImage();
+        loadMetadata();
     }
 
     public BufferedImage getCurrentImage() {
@@ -50,6 +52,20 @@ public class Document {
 
     public int getHeight() {
         return currentImage.getHeight();
+    }
+
+    private void loadMetadata() {
+        this.metadata = new Metadata();
+
+        // Load from file
+    }
+
+    public void save() {
+
+    }
+
+    public void saveAs(File path) {
+
     }
 
     private void loadImage() throws IOException {
@@ -84,5 +100,9 @@ public class Document {
     public void lastPage() throws IOException {
         index = imageList.size() - 1;
         loadImage();
+    }
+
+    public Metadata getMetadata() {
+        return metadata;
     }
 }
