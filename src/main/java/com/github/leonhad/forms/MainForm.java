@@ -9,7 +9,6 @@ import com.github.leonhad.utils.OSUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 
@@ -19,22 +18,19 @@ public class MainForm extends JFrame {
 
     private final ImageComponent imageComponent = new ImageComponent();
 
-    private JMenuItem save;
+    private final JMenuItem saveMenu = new JMenuItem("Save");
 
-    private JMenu readMenu;
+    private final JMenu readMenu = getReadMenu();
 
-    public MainForm() throws HeadlessException {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
-                 UnsupportedLookAndFeelException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
-        }
+    private final JMenu editMenu = getEditMenu();
 
+    public MainForm() {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setTitle("Comic Info Editor");
         setSize(800, 600);
         setLocationRelativeTo(null);
+
+        setIconImage(Toolkit.getDefaultToolkit().getImage(MainForm.class.getResource("/images/icon.png")));
 
         var menuBar = getMenu();
 
@@ -48,29 +44,6 @@ public class MainForm extends JFrame {
         imagePanel.add(imageComponent, BorderLayout.CENTER);
         principal.add(imagePanel, BorderLayout.CENTER);
 
-        var optionsPanel = new JPanel();
-        optionsPanel.setPreferredSize(new Dimension(200, 1));
-        var gridBag = new GridBagLayout();
-        var c = new GridBagConstraints();
-
-        optionsPanel.setLayout(gridBag);
-
-        c.fill = GridBagConstraints.BOTH;
-        c.weightx = 0.0;
-        c.insets = new Insets(5, 5, 5, 5);
-        c.gridwidth = GridBagConstraints.RELATIVE;
-        var t = new JLabel("Name");
-        gridBag.setConstraints(t, c);
-        optionsPanel.add(t);
-
-        c.gridwidth  = GridBagConstraints.REMAINDER;
-        c.weightx = 1.0;
-        var text = new JTextField();
-        gridBag.setConstraints(text, c);
-        optionsPanel.add(text);
-
-        //principal.add(optionsPanel, BorderLayout.EAST);
-
         setContentPane(principal);
         disableMenus();
     }
@@ -78,10 +51,22 @@ public class MainForm extends JFrame {
     private JMenuBar getMenu() {
         var menuBar = new JMenuBar();
         menuBar.add(getFileMenu());
-
-        readMenu = getReadMenu();
+        menuBar.add(editMenu);
         menuBar.add(readMenu);
         return menuBar;
+    }
+
+    private JMenu getEditMenu() {
+        var menu = new JMenu("Edit");
+        menu.setMnemonic(KeyEvent.VK_E);
+
+        var editInfo = new JMenuItem("Edit Document");
+        editInfo.setMnemonic(KeyEvent.VK_D);
+        editInfo.setAccelerator(KeyStroke.getKeyStroke('I', Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+        editInfo.addActionListener(e -> new InfoForm(this, document));
+        menu.add(editInfo);
+
+        return menu;
     }
 
     private JMenu getReadMenu() {
@@ -108,7 +93,7 @@ public class MainForm extends JFrame {
 
         var previousPage = new JMenuItem("Previous Page");
         previousPage.setMnemonic(KeyEvent.VK_P);
-        previousPage.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0));
+        previousPage.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0));
         previousPage.addActionListener(e -> this.previousPage());
         menu.add(previousPage);
 
@@ -127,18 +112,16 @@ public class MainForm extends JFrame {
 
         menu.add(open);
 
-        save = new JMenuItem("Save");
-        save.setMnemonic('S');
-        save.setAccelerator(KeyStroke.getKeyStroke('S', Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
-        save.addActionListener(e -> save());
-        menu.add(save);
+        saveMenu.setMnemonic('S');
+        saveMenu.setAccelerator(KeyStroke.getKeyStroke('S', Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+        saveMenu.addActionListener(e -> save());
+        menu.add(saveMenu);
 
         if (!OSUtils.isOSX()) {
             menu.add(new JSeparator());
 
             var exit = new JMenuItem("Exit");
             exit.setMnemonic('X');
-            exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, InputEvent.ALT_DOWN_MASK));
             exit.addActionListener(e -> System.exit(0));
 
             menu.add(exit);
@@ -225,18 +208,26 @@ public class MainForm extends JFrame {
     }
 
     private void disableMenus() {
-        save.setEnabled(false);
+        saveMenu.setEnabled(false);
 
         for (var i = 0; i < readMenu.getItemCount(); i++) {
             readMenu.getItem(i).setEnabled(false);
         }
+
+        for (var i = 0; i < editMenu.getItemCount(); i++) {
+            editMenu.getItem(i).setEnabled(false);
+        }
     }
 
     private void enableMenus() {
-        save.setEnabled(true);
+        saveMenu.setEnabled(true);
 
         for (var i = 0; i < readMenu.getItemCount(); i++) {
             readMenu.getItem(i).setEnabled(true);
+        }
+
+        for (var i = 0; i < editMenu.getItemCount(); i++) {
+            editMenu.getItem(i).setEnabled(true);
         }
     }
 }

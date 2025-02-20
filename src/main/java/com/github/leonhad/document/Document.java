@@ -1,7 +1,6 @@
 package com.github.leonhad.document;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +23,7 @@ public class Document {
         this.file = file;
 
         try (var zipFile = new ZipFile(file)) {
-            zipFile.stream().forEach((entry) -> {
+            zipFile.stream().forEach(entry -> {
                 var name = entry.getName();
                 if (name.endsWith(".jpg") || name.endsWith(".png")) {
                     imageList.add(entry);
