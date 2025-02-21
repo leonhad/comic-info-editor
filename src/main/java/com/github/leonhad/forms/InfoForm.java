@@ -80,9 +80,11 @@ public class InfoForm extends JDialog {
 
     public InfoForm(Frame parent, Metadata metadata) {
         super(parent);
+        setResizable(false);
+
         this.metadata = metadata;
 
-        setTitle("Edit document information");
+        setTitle("Edit metadata");
 
         initFieldData();
 
@@ -91,12 +93,13 @@ public class InfoForm extends JDialog {
         getContentPane().add(createOptionsPanel(), BorderLayout.SOUTH);
 
         setMinimumSize(new Dimension(600, 1));
-        pack();
 
         setLocationRelativeTo(parent);
 
         loadMetadata();
         setVisible(true);
+
+        pack();
     }
 
     private void loadMetadata() {
@@ -213,7 +216,7 @@ public class InfoForm extends JDialog {
         panel.add(new JLabel("Book count:"));
         panel.add(count, "grow, wrap");
         panel.add(new JLabel("Summary:"));
-        panel.add(summary, "span, grow, wrap");
+        panel.add(new JScrollPane(summary), "span, grow, wrap");
         panel.add(new JLabel("Year:"));
         panel.add(year, "grow");
         panel.add(new JLabel("Month:"));

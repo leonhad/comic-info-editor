@@ -2,16 +2,19 @@ package com.github.leonhad.forms;
 
 import com.github.leonhad.components.ImageComponent;
 import com.github.leonhad.document.Document;
+import com.github.leonhad.document.PageType;
 import com.github.leonhad.filefilters.AllSupportedFilter;
 import com.github.leonhad.filefilters.CbzFilter;
 import com.github.leonhad.filefilters.ZipFilter;
 import com.github.leonhad.utils.OSUtils;
+import com.github.leonhad.utils.StatusBar;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.Optional;
 
 public class MainForm extends JFrame {
 
@@ -35,9 +38,7 @@ public class MainForm extends JFrame {
 
         setIconImage(Toolkit.getDefaultToolkit().getImage(MainForm.class.getResource("/images/icon.png")));
 
-        var menuBar = getMenu();
-
-        setJMenuBar(menuBar);
+        setJMenuBar(getMenu());
 
         var principal = new JPanel();
         principal.setLayout(new BorderLayout());
@@ -46,9 +47,27 @@ public class MainForm extends JFrame {
         imagePanel.setLayout(new BorderLayout());
         imagePanel.add(imageComponent, BorderLayout.CENTER);
         principal.add(imagePanel, BorderLayout.CENTER);
+        principal.add(getStatusPanel(), BorderLayout.SOUTH);
 
         setContentPane(principal);
         disableMenus();
+    }
+
+    private static JPanel getStatusPanel() {
+        var panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.setBorder(BorderFactory.createEtchedBorder());
+        var status = new JLabel("Ok.");
+        status.setPreferredSize(new Dimension(100, status.getPreferredSize().height));
+        var fileStatus = new JLabel("", SwingConstants.CENTER);
+        var imageStatus = new JLabel("", SwingConstants.RIGHT);
+        imageStatus.setPreferredSize(new Dimension(100, imageStatus.getPreferredSize().height));
+
+        StatusBar.getInstance().setStatusBar(status, fileStatus, imageStatus);
+        panel.add(status, BorderLayout.WEST);
+        panel.add(fileStatus, BorderLayout.CENTER);
+        panel.add(imageStatus, BorderLayout.EAST);
+        return panel;
     }
 
     private JMenuBar getMenu() {
@@ -63,11 +82,44 @@ public class MainForm extends JFrame {
         var menu = new JMenu("Edit");
         menu.setMnemonic(KeyEvent.VK_E);
 
-        var editInfo = new JMenuItem("Edit Document");
+        var editInfo = new JMenuItem("Edit metadata");
         editInfo.setMnemonic(KeyEvent.VK_D);
         editInfo.setAccelerator(KeyStroke.getKeyStroke('I', Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         editInfo.addActionListener(e -> new InfoForm(this, document.getMetadata()));
         menu.add(editInfo);
+
+        menu.addSeparator();
+
+        var setPageType = new JMenu("Set current image as...");
+        setPageType.setMnemonic(KeyEvent.VK_T);
+        var none = new JMenuItem("None");
+        none.setMnemonic(KeyEvent.VK_N);
+        none.setAccelerator(KeyStroke.getKeyStroke("F9"));
+        none.addActionListener(e -> {
+            try {
+                document.setPageType(null);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        setPageType.add(none);
+        setPageType.addSeparator();
+
+        for (var type : PageType.values()) {
+            var item = new JMenuItem(type.getDescription());
+            Optional.ofNullable(type.getKeyStroke()).ifPresent(item::setAccelerator);
+
+            item.addActionListener(e -> {
+                try {
+                    document.setPageType(type);
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+            setPageType.add(item);
+        }
+
+        menu.add(setPageType);
 
         return menu;
     }
@@ -151,14 +203,17 @@ public class MainForm extends JFrame {
         open.setDialogTitle("Select a comic file...");
 
         if (open.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            try {
-                this.document = new Document(open.getSelectedFile());
-                showImage();
-                enableMenus();
-                this.getContentPane().repaint();
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
-            }
+            SwingUtilities.invokeLater(() -> {
+                try {
+                    this.document = new Document(open.getSelectedFile());
+                    showImage();
+                    enableMenus();
+                    this.getContentPane().repaint();
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+
         }
     }
 
@@ -212,8 +267,11 @@ public class MainForm extends JFrame {
     }
 
     private void save() {
-
-        document.save();
+        try {
+            document.save();
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void saveAs() {
@@ -229,13 +287,18 @@ public class MainForm extends JFrame {
 
         if (savePanel.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             var selectedFile = savePanel.getSelectedFile();
-            if (selectedFile.exists()) {
-                var confirm = JOptionPane.showConfirmDialog(this, "The file " + selectedFile.getName() + " already exists\nConfirm override?", "Confirm Save As...", JOptionPane.YES_NO_OPTION);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    document.saveAs(selectedFile);
+
+            try {
+                if (selectedFile.exists()) {
+                    var confirm = JOptionPane.showConfirmDialog(this, "The file " + selectedFile.getName() + " already exists\nConfirm override?", "Confirm Save As...", JOptionPane.YES_NO_OPTION);
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        document.saveAs(selectedFile.toPath());
+                    }
+                } else {
+                    document.saveAs(selectedFile.toPath());
                 }
-            } else {
-                document.saveAs(selectedFile);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -249,7 +312,7 @@ public class MainForm extends JFrame {
         }
 
         for (var i = 0; i < editMenu.getItemCount(); i++) {
-            editMenu.getItem(i).setEnabled(false);
+            Optional.ofNullable(editMenu.getItem(i)).ifPresent(item -> item.setEnabled(false));
         }
     }
 
@@ -262,7 +325,7 @@ public class MainForm extends JFrame {
         }
 
         for (var i = 0; i < editMenu.getItemCount(); i++) {
-            editMenu.getItem(i).setEnabled(true);
+            Optional.ofNullable(editMenu.getItem(i)).ifPresent(item -> item.setEnabled(true));
         }
     }
 }

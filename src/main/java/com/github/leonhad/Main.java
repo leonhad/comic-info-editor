@@ -7,9 +7,8 @@ import javax.swing.*;
 public class Main {
 
     public static void main(String[] args) {
-        // FIXME review
         System.setProperty("sun.java2d.uiScale.enabled", "true");
-        //System.setProperty("sun.java2d.uiScale", "2.0");
+        System.setProperty("sun.java2d.uiScale", "1.5");
         System.setProperty("java.awt.headless", "false");
 
         try {
@@ -18,7 +17,9 @@ public class Main {
             JOptionPane.showMessageDialog(null, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
         }
 
-        var frame = new MainForm();
-        frame.setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+            var frame = new MainForm();
+            frame.setVisible(true);
+        });
     }
 }
