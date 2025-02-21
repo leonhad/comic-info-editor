@@ -76,6 +76,10 @@ public class InfoForm extends JDialog {
 
     private final JTextField scanInformation = new JTextField();
 
+    private final JTextField gtin = new JTextField();
+
+    private final JTextField volume = new JTextField();
+
     private final RatingComponent communityRating = new RatingComponent();
 
     public InfoForm(Frame parent, Metadata metadata) {
@@ -125,16 +129,18 @@ public class InfoForm extends JDialog {
         tags.setText(metadata.getTags());
         web.setText(metadata.getWeb());
         format.setText(metadata.getFormat());
-        selectItem(languageIso, v -> v.getIsoCode().equals(metadata.getLanguageIso()));
-        selectItem(ageRating, v -> v.equals(metadata.getAgeRating()));
-        selectItem(blackAndWhite, v -> v.getCode().equals(metadata.getBlackAndWhite()));
-        selectItem(manga, v -> v.getCode().equals(metadata.getManga()));
-
+        gtin.setText(metadata.getGtin());
+        volume.setText(metadata.getVolume());
         characters.setText(metadata.getCharacters());
         teams.setText(metadata.getTeams());
         locations.setText(metadata.getLocations());
         scanInformation.setText(metadata.getScanInformation());
         communityRating.setText(metadata.getCommunityRating());
+
+        selectItem(languageIso, v -> v.getIsoCode().equals(metadata.getLanguageIso()));
+        selectItem(ageRating, v -> v.equals(metadata.getAgeRating()));
+        selectItem(blackAndWhite, v -> v.getCode().equals(metadata.getBlackAndWhite()));
+        selectItem(manga, v -> v.getCode().equals(metadata.getManga()));
     }
 
     private <T> void selectItem(JComboBox<T> item, Function<T, Boolean> equals) {
@@ -169,16 +175,19 @@ public class InfoForm extends JDialog {
         metadata.setGenre(genre.getText());
         metadata.setTags(tags.getText());
         metadata.setWeb(web.getText());
-        metadata.setLanguageIso(Optional.ofNullable((ISOLanguage) languageIso.getSelectedItem()).map(ISOLanguage::getIsoCode).orElse(null));
         metadata.setFormat(format.getText());
-        metadata.setAgeRating((String)ageRating.getSelectedItem());
-        metadata.setBlackAndWhite(Optional.ofNullable((CodeValue) blackAndWhite.getSelectedItem()).map(CodeValue::getCode).orElse(null));
-        metadata.setManga(Optional.ofNullable((CodeValue) manga.getSelectedItem()).map(CodeValue::getCode).orElse(null));
         metadata.setCharacters(characters.getText());
         metadata.setTeams(teams.getText());
         metadata.setLocations(locations.getText());
         metadata.setScanInformation(scanInformation.getText());
         metadata.setCommunityRating(communityRating.getText());
+        metadata.setGtin(gtin.getText());
+        metadata.setVolume(volume.getText());
+
+        metadata.setAgeRating((String)ageRating.getSelectedItem());
+        metadata.setLanguageIso(Optional.ofNullable((ISOLanguage) languageIso.getSelectedItem()).map(ISOLanguage::getIsoCode).orElse(null));
+        metadata.setBlackAndWhite(Optional.ofNullable((CodeValue) blackAndWhite.getSelectedItem()).map(CodeValue::getCode).orElse(null));
+        metadata.setManga(Optional.ofNullable((CodeValue) manga.getSelectedItem()).map(CodeValue::getCode).orElse(null));
 
         dispose();
     }
@@ -217,6 +226,8 @@ public class InfoForm extends JDialog {
         panel.add(count, "grow, wrap");
         panel.add(new JLabel("Summary:"));
         panel.add(new JScrollPane(summary), "span, grow, wrap");
+        panel.add(new JLabel("Volume:"));
+        panel.add(volume, "grow, wrap");
         panel.add(new JLabel("Year:"));
         panel.add(year, "grow");
         panel.add(new JLabel("Month:"));
@@ -268,7 +279,9 @@ public class InfoForm extends JDialog {
         panel.add(new JLabel("Manga:"));
         panel.add(manga, "grow, wrap");
         panel.add(new JLabel("Community rating:"));
-        panel.add(communityRating, "wrap");
+        panel.add(communityRating);
+        panel.add(new JLabel("GTIN/ISBN:"));
+        panel.add(gtin, "grow, wrap");
 
         return panel;
     }

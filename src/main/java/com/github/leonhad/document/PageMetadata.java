@@ -24,6 +24,11 @@ public class PageMetadata {
         this.height = height;
     }
 
+    public PageMetadata(ZipEntry entry, int pageNumber, int width, int height, PageType type) {
+        this(entry, pageNumber, width, height);
+        this.type = type;
+    }
+
     public InputStream createInputStream(ZipFile zipFile) throws IOException {
         return zipFile.getInputStream(entry);
     }

@@ -3,9 +3,13 @@ package com.github.leonhad.document;
 import com.github.leonhad.utils.StatusBar;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
+import org.jdom2.input.DOMBuilder;
 import org.jdom2.transform.JDOMSource;
+import org.xml.sax.SAXException;
 
 import javax.imageio.ImageIO;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
@@ -20,6 +24,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 public class Document {
 
@@ -29,45 +35,28 @@ public class Document {
     private boolean fileLoaded = false;
     private int index;
     private BufferedImage currentImage;
-
-    private final List<ZipEntry> xmlList = new ArrayList<>();
+    private final int imageCount;
 
     public Document(File file) throws IOException {
         StatusBar.setStatus("Loading file...");
         this.file = file;
 
-        var imageList = new ArrayList<ZipEntry>();
-
         try (var zipFile = new ZipFile(file)) {
-            zipFile.stream().forEach(entry -> {
-                var name = entry.getName();
-                if (name.endsWith(".jpg") || name.endsWith(".png")) {
-                    imageList.add(entry);
-                } else if (name.endsWith(".xml")) {
-                    xmlList.add(entry);
-                }
-            });
-
-            imageList.sort(Comparator.comparing(ZipEntry::getName, String.CASE_INSENSITIVE_ORDER));
-            xmlList.sort(Comparator.comparing(ZipEntry::getName, String.CASE_INSENSITIVE_ORDER));
+            var imageList = getImageList(zipFile);
 
             imageList.stream().findFirst().orElseThrow(() -> new IOException("No image found"));
-            StatusBar.setFileStatus(imageList.size() + " images");
+            imageCount = imageList.size();
+            StatusBar.setFileStatus(imageCount + " images");
 
             loadImage(zipFile.getInputStream(imageList.get(0)));
 
             var info = zipFile.getEntry("ComicInfo.xml");
             if (info != null) {
-                loadMetadata();
+                loadMetadata(file);
 
-                if (pagesMetadata.size() != imageList.size()) {
-                    rebuildMetadata(imageList);
-                } else {
-                    StatusBar.setImageStatus(pagesMetadata.get(index).getType().getDescription());
-                    fileLoaded = true;
-                    StatusBar.setStatus("File loaded.");
-                }
+                StatusBar.setStatus("File loaded.");
             } else {
+                this.metadata = new Metadata();
                 rebuildMetadata(imageList);
             }
         } catch (IOException e) {
@@ -76,8 +65,20 @@ public class Document {
         }
     }
 
+    private static ArrayList<ZipEntry> getImageList(ZipFile zipFile) {
+        var imageList = new ArrayList<ZipEntry>();
+        zipFile.stream().forEach(entry -> {
+            var name = entry.getName();
+            if (name.endsWith(".jpg") || name.endsWith(".png")) {
+                imageList.add(entry);
+            }
+        });
+
+        imageList.sort(Comparator.comparing(ZipEntry::getName, String.CASE_INSENSITIVE_ORDER));
+        return imageList;
+    }
+
     private void rebuildMetadata(List<ZipEntry> imageList) {
-        this.metadata = new Metadata();
         StatusBar.setStatus("Processing page metadata...");
         new Thread(() -> processPageMetadata(imageList)).start();
     }
@@ -118,10 +119,86 @@ public class Document {
         return currentImage.getHeight();
     }
 
-    private void loadMetadata() {
+    private void loadMetadata(File path) throws IOException {
         this.metadata = new Metadata();
 
-        // Load from file
+        try (var zipFile = new ZipFile(path)) {
+            var info = zipFile.getEntry("ComicInfo.xml");
+            if (info == null) {
+                return;
+            }
+
+            var factory = DocumentBuilderFactory.newInstance();
+            var documentBuilder = factory.newDocumentBuilder();
+            org.jdom2.Document document;
+            try (var stream = zipFile.getInputStream(info);
+                 var buffer = new BufferedInputStream(stream)) {
+                document = new DOMBuilder().build(documentBuilder.parse(buffer));
+            }
+
+            var root = document.getRootElement();
+            metadata.setTitle(root.getChildText("Title"));
+            metadata.setSeries(root.getChildText("Series"));
+            metadata.setNumber(root.getChildText("Number"));
+            metadata.setCount(root.getChildText("Count"));
+            metadata.setSummary(root.getChildText("Summary"));
+            metadata.setVolume(root.getChildText("Volume"));
+            metadata.setYear(root.getChildText("Year"));
+            metadata.setMonth(root.getChildText("Month"));
+            metadata.setDay(root.getChildText("Day"));
+            metadata.setWriter(root.getChildText("Writer"));
+            metadata.setPenciller(root.getChildText("Penciller"));
+            metadata.setInker(root.getChildText("Inker"));
+            metadata.setColorist(root.getChildText("Colorist"));
+            metadata.setLetterer(root.getChildText("Letterer"));
+            metadata.setCoverArtist(root.getChildText("CoverArtist"));
+            metadata.setEditor(root.getChildText("Editor"));
+            metadata.setTranslator(root.getChildText("Translator"));
+            metadata.setPublisher(root.getChildText("Publisher"));
+            metadata.setImprint(root.getChildText("Imprint"));
+            metadata.setGenre(root.getChildText("Genre"));
+            metadata.setTags(root.getChildText("Tags"));
+            metadata.setWeb(root.getChildText("Web"));
+            metadata.setLanguageIso(root.getChildText("LanguageISO"));
+            metadata.setFormat(root.getChildText("Format"));
+            metadata.setAgeRating(root.getChildText("AgeRating"));
+            metadata.setBlackAndWhite(root.getChildText("BlackAndWhite"));
+            metadata.setManga(root.getChildText("Manga"));
+            metadata.setCharacters(root.getChildText("Characters"));
+            metadata.setTeams(root.getChildText("Teams"));
+            metadata.setLocations(root.getChildText("Locations"));
+            metadata.setScanInformation(root.getChildText("ScanInformation"));
+            metadata.setCommunityRating(root.getChildText("CommunityRating"));
+            metadata.setGtin(root.getChildText("GTIN"));
+
+            var imageList = getImageList(zipFile);
+            pagesMetadata.clear();
+            var pages = root.getChild("Pages");
+            if (pages != null) {
+                try {
+                    for (var page : pages.getChildren()) {
+                        var image = Integer.parseInt(page.getAttributeValue("Image"));
+                        var type = PageType.fromText(page.getAttributeValue("Type"));
+                        var imageWidth = Integer.parseInt(page.getAttributeValue("ImageWidth"));
+                        var imageHeight = Integer.parseInt(page.getAttributeValue("ImageHeight"));
+
+                        pagesMetadata.add(new PageMetadata(imageList.get(image), image, imageWidth, imageHeight, type));
+                    }
+                } catch (Exception ex) {
+                    StatusBar.setImageStatus("Error parsing XML.");
+                    rebuildMetadata(imageList);
+                }
+            }
+
+            if (pagesMetadata.size() != imageCount) {
+                rebuildMetadata(imageList);
+            } else {
+                StatusBar.setImageStatus(pagesMetadata.get(index).getType().getDescription());
+                fileLoaded = true;
+            }
+        } catch (ParserConfigurationException | SAXException e) {
+            throw new IOException(e);
+        }
     }
 
     public void save() throws IOException {
@@ -136,6 +213,8 @@ public class Document {
                 writeXml(out);
             }
         }
+
+        StatusBar.setStatus("File saved.");
     }
 
     public void saveAs(Path path) throws IOException {
@@ -143,14 +222,40 @@ public class Document {
             throw new IOException("File not loaded yet.");
         }
 
-        // FIXME copy original images
+        if (!path.toFile().equals(file)) {
+            StatusBar.setStatus("Saving file...");
 
-        try (var fs = FileSystems.newFileSystem(path, null)) {
-            Path source = fs.getPath("/ComicInfo.xml");
+            new Thread(() -> {
+                try (var output = new FileOutputStream(path.toFile());
+                     var bufferOut = new BufferedOutputStream(output);
+                     var zipOut = new ZipOutputStream(bufferOut);
+                     var input = new FileInputStream(file);
+                     var bufferIn = new BufferedInputStream(input);
+                     var zipIn = new ZipInputStream(bufferIn)) {
 
-            try (var out = Files.newOutputStream(source)) {
-                writeXml(out);
-            }
+                    zipOut.setMethod(ZipOutputStream.DEFLATED);
+                    zipOut.setLevel(9);
+
+                    zipOut.putNextEntry(new ZipEntry("ComicInfo.xml"));
+                    writeXml(zipOut);
+
+                    ZipEntry entry;
+                    while ((entry = zipIn.getNextEntry()) != null) {
+                        if (entry.getName().equals("ComicInfo.xml")) {
+                            continue;
+                        }
+
+                        zipOut.putNextEntry(new ZipEntry(entry.getName()));
+                        zipIn.transferTo(zipOut);
+                    }
+                    StatusBar.setStatus("File saved.");
+                } catch (Exception e) {
+                    StatusBar.setStatus("Unexpected error saving file.");
+                }
+
+            }).start();
+        } else {
+            save();
         }
     }
 
@@ -170,6 +275,7 @@ public class Document {
         addContent(root, "Penciller", metadata.getPenciller());
         addContent(root, "Inker", metadata.getInker());
         addContent(root, "Colorist", metadata.getColorist());
+        addContent(root, "Volume", metadata.getVolume());
         addContent(root, "Letterer", metadata.getLetterer());
         addContent(root, "CoverArtist", metadata.getCoverArtist());
         addContent(root, "Editor", metadata.getEditor());
@@ -189,6 +295,7 @@ public class Document {
         addContent(root, "Locations", metadata.getLocations());
         addContent(root, "ScanInformation", metadata.getScanInformation());
         addContent(root, "CommunityRating", metadata.getCommunityRating());
+        addContent(root, "GTIN", metadata.getGtin());
         addContent(root, "PageCount", Integer.toString(pagesMetadata.size()));
 
         var pages = new Element("Pages");
@@ -218,7 +325,7 @@ public class Document {
 
     private void addContent(Element element, String tag, String value) {
         if (value != null && !value.isEmpty()) {
-            element.addContent(createElement(tag, metadata.getSeries()));
+            element.addContent(createElement(tag, value));
         }
     }
 

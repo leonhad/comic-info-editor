@@ -1,6 +1,7 @@
 package com.github.leonhad.document;
 
 import javax.swing.*;
+import java.util.Arrays;
 
 public enum PageType {
 
@@ -26,6 +27,14 @@ public enum PageType {
         this.text = text;
         this.description = description;
         this.keyStroke = keyStroke;
+    }
+
+    public static PageType fromText(String text) {
+        if (text == null || text.isBlank()) {
+            return null;
+        }
+
+        return Arrays.stream(values()).filter(t -> t.text.equalsIgnoreCase(text)).findFirst().orElse(null);
     }
 
     public String getText() {

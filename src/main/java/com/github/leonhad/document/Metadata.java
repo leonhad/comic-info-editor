@@ -12,6 +12,8 @@ public class Metadata {
 
     private String summary;
 
+    private String volume;
+
     private String year;
 
     private String month;
@@ -63,6 +65,8 @@ public class Metadata {
     private String scanInformation;
 
     private String communityRating;
+
+    private String gtin;
 
     public String getTitle() {
         return title;
@@ -310,5 +314,21 @@ public class Metadata {
 
     public void setCommunityRating(String communityRating) {
         this.communityRating = communityRating;
+    }
+
+    public String getGtin() {
+        return gtin;
+    }
+
+    public void setGtin(String gtin) {
+        this.gtin = gtin;
+    }
+
+    public String getVolume() {
+        return volume;
+    }
+
+    public void setVolume(String volume) {
+        this.volume = volume;
     }
 }
