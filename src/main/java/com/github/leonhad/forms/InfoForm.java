@@ -98,12 +98,12 @@ public class InfoForm extends JDialog {
 
         setMinimumSize(new Dimension(600, 1));
 
-        setLocationRelativeTo(parent);
-
         loadMetadata();
-        setVisible(true);
 
+        setVisible(true);
         pack();
+
+        setLocationRelativeTo(parent);
     }
 
     private void loadMetadata() {

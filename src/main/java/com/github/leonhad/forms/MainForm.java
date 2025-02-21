@@ -200,6 +200,10 @@ public class MainForm extends JFrame {
         open.addChoosableFileFilter(new ZipFilter());
         open.setFileFilter(allSupportedFilter);
 
+        if (document != null) {
+            open.setCurrentDirectory(document.getFile());
+        }
+
         open.setDialogTitle("Select a comic file...");
 
         if (open.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
@@ -275,18 +279,19 @@ public class MainForm extends JFrame {
     }
 
     private void saveAs() {
-        var savePanel = new JFileChooser("Save As...");
+        var saveChooser = new JFileChooser("Save As...");
 
         var allSupportedFilter = new AllSupportedFilter();
-        savePanel.addChoosableFileFilter(allSupportedFilter);
-        savePanel.addChoosableFileFilter(new CbzFilter());
-        savePanel.addChoosableFileFilter(new ZipFilter());
-        savePanel.setFileFilter(allSupportedFilter);
+        saveChooser.addChoosableFileFilter(allSupportedFilter);
+        saveChooser.addChoosableFileFilter(new CbzFilter());
+        saveChooser.addChoosableFileFilter(new ZipFilter());
+        saveChooser.setFileFilter(allSupportedFilter);
+        saveChooser.setCurrentDirectory(document.getFile());
 
-        savePanel.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        saveChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-        if (savePanel.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            var selectedFile = savePanel.getSelectedFile();
+        if (saveChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            var selectedFile = saveChooser.getSelectedFile();
 
             try {
                 if (selectedFile.exists()) {

@@ -392,4 +392,8 @@ public class Document {
         pagesMetadata.get(index).setType(pageType);
         StatusBar.setImageStatus(Optional.ofNullable(pagesMetadata.get(index).getType()).map(PageType::getDescription).orElse(""));
     }
+
+    public File getFile() {
+        return file;
+    }
 }
