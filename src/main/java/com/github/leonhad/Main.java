@@ -18,7 +18,7 @@ public class Main {
         }
 
         SwingUtilities.invokeLater(() -> {
-            var frame = new MainForm();
+            var frame = new MainForm(args);
             frame.setVisible(true);
         });
     }

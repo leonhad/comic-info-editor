@@ -13,10 +13,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
 public class MainForm extends JFrame {
+
+    private static final String TITLE = "Comic Info Editor";
 
     private Document document;
 
@@ -30,9 +33,9 @@ public class MainForm extends JFrame {
 
     private final JMenu editMenu = getEditMenu();
 
-    public MainForm() {
+    public MainForm(String[] args) {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Comic Info Editor");
+        setTitle(TITLE);
         setSize(800, 600);
         setLocationRelativeTo(null);
 
@@ -51,6 +54,17 @@ public class MainForm extends JFrame {
 
         setContentPane(principal);
         disableMenus();
+
+        if (args.length > 1) {
+            JOptionPane.showMessageDialog(this, "Select just one file", "Error", JOptionPane.ERROR_MESSAGE);
+        } else if (args.length == 1) {
+            var file = new File(args[0]);
+            if (!file.exists()) {
+                JOptionPane.showMessageDialog(this, "The file does not exists", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                SwingUtilities.invokeLater(() -> open(file));
+            }
+        }
     }
 
     private static JPanel getStatusPanel() {
@@ -191,34 +205,39 @@ public class MainForm extends JFrame {
     }
 
     private void open() {
-        var open = new JFileChooser();
-        open.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        var openDialog = new JFileChooser();
+        openDialog.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
         var allSupportedFilter = new AllSupportedFilter();
-        open.addChoosableFileFilter(allSupportedFilter);
-        open.addChoosableFileFilter(new CbzFilter());
-        open.addChoosableFileFilter(new ZipFilter());
-        open.setFileFilter(allSupportedFilter);
+        openDialog.addChoosableFileFilter(allSupportedFilter);
+        openDialog.addChoosableFileFilter(new CbzFilter());
+        openDialog.addChoosableFileFilter(new ZipFilter());
+        openDialog.setFileFilter(allSupportedFilter);
 
         if (document != null) {
-            open.setCurrentDirectory(document.getFile());
+            openDialog.setCurrentDirectory(document.getFile());
         }
 
-        open.setDialogTitle("Select a comic file...");
+        openDialog.setDialogTitle("Select a comic file...");
 
-        if (open.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            SwingUtilities.invokeLater(() -> {
-                try {
-                    this.document = new Document(open.getSelectedFile());
-                    showImage();
-                    enableMenus();
-                    this.getContentPane().repaint();
-                } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
-                }
-            });
-
+        if (openDialog.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            SwingUtilities.invokeLater(() -> open(openDialog.getSelectedFile()));
         }
+    }
+
+    private void open(File file) {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                this.document = new Document(file);
+                showImage();
+                enableMenus();
+                this.getContentPane().repaint();
+                this.setTitle(TITLE + " - " + file.getName());
+
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
     }
 
     private void showImage() {

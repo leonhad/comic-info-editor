@@ -2,7 +2,7 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>..\target\comic-info-editor-1.0-SNAPSHOT.jar</jar>
+  <jar>..\target\comic-info-editor-1.0.jar</jar>
   <outfile>ComicInfoEditor.exe</outfile>
   <errTitle>This application needs Java 11 or later.</errTitle>
   <cmdLine></cmdLine>
@@ -14,6 +14,9 @@
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
   <icon>icon.ico</icon>
+  <classPath>
+    <mainClass>com.github.leonhad.Main</mainClass>
+  </classPath>
   <jre>
     <path>%JAVA_HOME%;%PATH%</path>
     <requiresJdk>false</requiresJdk>
@@ -21,4 +24,18 @@
     <minVersion>11</minVersion>
     <maxVersion></maxVersion>
   </jre>
+  <versionInfo>
+    <fileVersion>1.0.0.0</fileVersion>
+    <txtFileVersion>1.0.0</txtFileVersion>
+    <fileDescription>Comic Info Editor</fileDescription>
+    <copyright>Copyright (c) 2025 Leonardo Costa</copyright>
+    <productVersion>1.0.0.0</productVersion>
+    <txtProductVersion>1.0</txtProductVersion>
+    <productName>Comic Info Editor</productName>
+    <companyName></companyName>
+    <internalName>ComicInfoEditor</internalName>
+    <originalFilename>ComicInfoEditor.exe</originalFilename>
+    <trademarks></trademarks>
+    <language>ENGLISH_US</language>
+  </versionInfo>
 </launch4jConfig>
