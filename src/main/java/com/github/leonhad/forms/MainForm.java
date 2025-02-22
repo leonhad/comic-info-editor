@@ -6,6 +6,7 @@ import com.github.leonhad.document.PageType;
 import com.github.leonhad.filefilters.AllSupportedFilter;
 import com.github.leonhad.filefilters.CbzFilter;
 import com.github.leonhad.filefilters.ZipFilter;
+import com.github.leonhad.utils.Constants;
 import com.github.leonhad.utils.OSUtils;
 import com.github.leonhad.utils.StatusBar;
 
@@ -18,8 +19,6 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class MainForm extends JFrame {
-
-    private static final String TITLE = "Comic Info Editor";
 
     private Document document;
 
@@ -35,7 +34,7 @@ public class MainForm extends JFrame {
 
     public MainForm(String[] args) {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setTitle(TITLE);
+        setTitle(Constants.TITLE);
         setSize(800, 600);
         setLocationRelativeTo(null);
 
@@ -89,6 +88,19 @@ public class MainForm extends JFrame {
         menuBar.add(getFileMenu());
         menuBar.add(editMenu);
         menuBar.add(readMenu);
+
+        menuBar.add(Box.createHorizontalGlue());
+
+        var helpMenu = new JMenu("Help");
+        helpMenu.setMnemonic(KeyEvent.VK_H);
+
+        var aboutMenu = new JMenuItem("About");
+        aboutMenu.setMnemonic(KeyEvent.VK_A);
+        aboutMenu.addActionListener(e -> new AboutForm(this));
+        aboutMenu.setAccelerator(KeyStroke.getKeyStroke("F1"));
+        helpMenu.add(aboutMenu);
+
+        menuBar.add(helpMenu);
         return menuBar;
     }
 
@@ -232,7 +244,7 @@ public class MainForm extends JFrame {
                 showImage();
                 enableMenus();
                 this.getContentPane().repaint();
-                this.setTitle(TITLE + " - " + file.getName());
+                this.setTitle(Constants.TITLE + " - " + file.getName());
 
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
