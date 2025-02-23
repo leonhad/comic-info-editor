@@ -2,6 +2,10 @@
 
 This project is a ComicInfo.xml editor for Comic Book files (zip and cbz files formats).
 
+To run this project, you will need Java at last version 11.
+
+You can grab one on https://adoptium.net
+
 # Licensing
 
 This software is released under the Apache License Version 2.0.
