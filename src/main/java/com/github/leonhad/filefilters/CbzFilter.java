@@ -3,7 +3,7 @@ package com.github.leonhad.filefilters;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
 
-public class CbzFilter extends FileFilter {
+public class CbzFilter extends FileFilter implements java.io.FileFilter {
 
     @Override
     public String getDescription() {

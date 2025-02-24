@@ -1,5 +1,7 @@
 package com.github.leonhad.document;
 
+import com.github.leonhad.fileformat.FileFactory;
+import com.github.leonhad.fileformat.FileOpener;
 import com.github.leonhad.utils.StatusBar;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
@@ -7,7 +9,6 @@ import org.jdom2.input.DOMBuilder;
 import org.jdom2.transform.JDOMSource;
 import org.xml.sax.SAXException;
 
-import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -19,11 +20,9 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
@@ -33,31 +32,35 @@ public class Document {
     private final List<PageMetadata> pagesMetadata = new ArrayList<>();
     private final File file;
     private boolean fileLoaded = false;
-    private int index;
     private BufferedImage currentImage;
-    private final int imageCount;
+    private final FileOpener fileOpener;
 
     public Document(File file) throws IOException {
         StatusBar.setStatus("Loading file...");
-        this.file = file;
+        try {
+            this.file = file;
+            this.fileOpener = FileFactory.getOpener(file);
+            this.currentImage = fileOpener.getCurrentImage();
+            StatusBar.setFileStatus(fileOpener.getImageCount() + " images");
 
-        try (var zipFile = new ZipFile(file)) {
-            var imageList = getImageList(zipFile);
+            var info = fileOpener.getComicInfo(inputStream -> {
+                try {
+                    loadMetadata(inputStream);
+                    StatusBar.setStatus("File loaded.");
+                } catch (IOException e) {
+                    StatusBar.setStatus("Error loading file.");
+                    return false;
+                }
 
-            imageList.stream().findFirst().orElseThrow(() -> new IOException("No image found"));
-            imageCount = imageList.size();
-            StatusBar.setFileStatus(imageCount + " images");
+                return true;
+            });
 
-            loadImage(zipFile.getInputStream(imageList.get(0)));
-
-            var info = zipFile.getEntry("ComicInfo.xml");
-            if (info != null) {
-                loadMetadata(file);
-
-                StatusBar.setStatus("File loaded.");
-            } else {
+            if (!info) {
                 this.metadata = new Metadata();
-                rebuildMetadata(imageList);
+                rebuildMetadata();
+            } else {
+                fileLoaded = true;
+                StatusBar.setStatus("File loaded.");
             }
         } catch (IOException e) {
             StatusBar.setStatus("Error loading file.");
@@ -65,36 +68,19 @@ public class Document {
         }
     }
 
-    private static ArrayList<ZipEntry> getImageList(ZipFile zipFile) {
-        var imageList = new ArrayList<ZipEntry>();
-        zipFile.stream().forEach(entry -> {
-            var name = entry.getName();
-            if (name.endsWith(".jpg") || name.endsWith(".png")) {
-                imageList.add(entry);
-            }
-        });
-
-        imageList.sort(Comparator.comparing(ZipEntry::getName, String.CASE_INSENSITIVE_ORDER));
-        return imageList;
-    }
-
-    private void rebuildMetadata(List<ZipEntry> imageList) {
+    private void rebuildMetadata() {
         StatusBar.setStatus("Processing page metadata...");
-        new Thread(() -> processPageMetadata(imageList)).start();
+        new Thread(this::processPageMetadata).start();
     }
 
-    private void processPageMetadata(List<ZipEntry> imageList) {
-        try (var zipFile = new ZipFile(file)) {
-            for (int i = 0; i < imageList.size(); i++) {
-                var entry = imageList.get(i);
-                try (var stream = zipFile.getInputStream(entry);
-                     var buffer = new BufferedInputStream(stream)) {
-                    var image = ImageIO.read(buffer);
+    private void processPageMetadata() {
+        try {
+            for (int loop = 0; loop < fileOpener.getImageCount(); loop++) {
+                var image = fileOpener.getImageList().get(loop);
+                BufferedImage buffer = fileOpener.readImage(image);
+                pagesMetadata.add(new PageMetadata(loop, image.getSize(), buffer.getWidth(), buffer.getHeight()));
 
-                    pagesMetadata.add(new PageMetadata(entry, i, image.getWidth(), image.getHeight()));
-                }
-
-                if (i == 0) {
+                if (loop == 0) {
                     StatusBar.setImageStatus(pagesMetadata.get(0).getType().getDescription());
                 }
             }
@@ -119,20 +105,14 @@ public class Document {
         return currentImage.getHeight();
     }
 
-    private void loadMetadata(File path) throws IOException {
+    private void loadMetadata(InputStream inputStream) throws IOException {
         this.metadata = new Metadata();
 
-        try (var zipFile = new ZipFile(path)) {
-            var info = zipFile.getEntry("ComicInfo.xml");
-            if (info == null) {
-                return;
-            }
-
+        try {
             var factory = DocumentBuilderFactory.newInstance();
             var documentBuilder = factory.newDocumentBuilder();
             org.jdom2.Document document;
-            try (var stream = zipFile.getInputStream(info);
-                 var buffer = new BufferedInputStream(stream)) {
+            try (var buffer = new BufferedInputStream(inputStream)) {
                 document = new DOMBuilder().build(documentBuilder.parse(buffer));
             }
 
@@ -171,8 +151,8 @@ public class Document {
             metadata.setCommunityRating(root.getChildText("CommunityRating"));
             metadata.setGtin(root.getChildText("GTIN"));
 
-            var imageList = getImageList(zipFile);
             pagesMetadata.clear();
+            var imageList = fileOpener.getImageList();
             var pages = root.getChild("Pages");
             if (pages != null) {
                 try {
@@ -186,14 +166,14 @@ public class Document {
                     }
                 } catch (Exception ex) {
                     StatusBar.setImageStatus("Error parsing XML.");
-                    rebuildMetadata(imageList);
+                    rebuildMetadata();
                 }
             }
 
-            if (pagesMetadata.size() != imageCount) {
-                rebuildMetadata(imageList);
+            if (pagesMetadata.size() != imageList.size()) {
+                rebuildMetadata();
             } else {
-                StatusBar.setImageStatus(pagesMetadata.get(index).getType().getDescription());
+                StatusBar.setImageStatus(pagesMetadata.get(fileOpener.getIndex()).getType().getDescription());
                 fileLoaded = true;
             }
         } catch (ParserConfigurationException | SAXException e) {
@@ -335,49 +315,30 @@ public class Document {
         return element;
     }
 
-    private void loadImage(InputStream inputStream) throws IOException {
-        try (var buffer = new BufferedInputStream(inputStream)) {
-            this.currentImage = ImageIO.read(buffer);
-
-            if(fileLoaded) {
-                StatusBar.setImageStatus(pagesMetadata.get(index).getType().getDescription());
-            }
-        }
-    }
-
-    private void loadImage() throws IOException {
-        try (var zipFile = new ZipFile(file);
-             var stream = pagesMetadata.get(index).createInputStream(zipFile)) {
-            loadImage(stream);
+    private void updateStatus() {
+        if(fileLoaded) {
+            StatusBar.setImageStatus(pagesMetadata.get(fileOpener.getIndex()).getType().getDescription());
         }
     }
 
     public void nextPage() throws IOException {
-        index++;
-        if (index >= pagesMetadata.size()) {
-            index = pagesMetadata.size() - 1;
-        }
-
-        loadImage();
+        this.currentImage = fileOpener.nextPage();
+        updateStatus();
     }
 
     public void previousPage() throws IOException {
-        index--;
-        if (index < 0) {
-            index = 0;
-        }
-
-        loadImage();
+        this.currentImage = fileOpener.previousPage();
+        updateStatus();
     }
 
     public void firstPage() throws IOException {
-        index = 0;
-        loadImage();
+        this.currentImage = fileOpener.firstPage();
+        updateStatus();
     }
 
     public void lastPage() throws IOException {
-        index = pagesMetadata.size() - 1;
-        loadImage();
+        this.currentImage = fileOpener.lastPage();
+        updateStatus();
     }
 
     public Metadata getMetadata() {
@@ -389,8 +350,8 @@ public class Document {
             throw new IOException("File not loaded yet.");
         }
 
-        pagesMetadata.get(index).setType(pageType);
-        StatusBar.setImageStatus(Optional.ofNullable(pagesMetadata.get(index).getType()).map(PageType::getDescription).orElse(""));
+        pagesMetadata.get(fileOpener.getIndex()).setType(pageType);
+        StatusBar.setImageStatus(Optional.ofNullable(pagesMetadata.get(fileOpener.getIndex()).getType()).map(PageType::getDescription).orElse(""));
     }
 
     public File getFile() {
