@@ -23,7 +23,7 @@ public abstract class FileOpener {
 
     public abstract void open(File file) throws IOException;
 
-    public abstract boolean getComicInfo(Function<InputStream, Boolean> consumer) throws IOException;
+    public abstract boolean getComicInfo(Function<InputStream, Boolean> consumer);
 
     public abstract List<ImageMetadata> getImageList();
 

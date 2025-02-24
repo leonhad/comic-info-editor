@@ -11,7 +11,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.zip.ZipFile;
 
@@ -54,13 +53,13 @@ public class ZipFileOpener extends FileOpener {
 
         try (var zipFile = new ZipFile(file)) {
             imageList = getImageList(zipFile);
-            imageList.stream().findFirst().orElseThrow(() -> new IOException("No image found"));
-            currentImage = loadImage(zipFile.getInputStream(zipFile.getEntry(imageList.get(0).getFileName())));
+            var image = imageList.stream().findFirst().orElseThrow(() -> new IOException("No image found"));
+            currentImage = loadImage(zipFile.getInputStream(zipFile.getEntry(image.getFileName())));
         }
     }
 
     @Override
-    public boolean getComicInfo(Function<InputStream, Boolean> consumer) throws IOException {
+    public boolean getComicInfo(Function<InputStream, Boolean> consumer) {
         try (var zipFile = new ZipFile(file)) {
             var info = zipFile.getEntry("ComicInfo.xml");
             if (info != null) {
@@ -68,6 +67,8 @@ public class ZipFileOpener extends FileOpener {
                     return consumer.apply(input);
                 }
             }
+        } catch (IOException e) {
+            // Not used.
         }
 
         return false;
