@@ -7,7 +7,7 @@ public class AllSupportedFilter extends FileFilter {
 
     @Override
     public String getDescription() {
-        return "All supported files (*.cbz, *cbr, *.rar, *.zip)";
+        return "All supported files (*cb7, *.cbr, *.cbt, *.cbz, 7z, *.rar, *.tar, *.zip)";
     }
 
     @Override
@@ -16,8 +16,10 @@ public class AllSupportedFilter extends FileFilter {
             return true;
         } else {
             String filename = pathname.getName().toLowerCase();
-            return filename.endsWith(".cbz") || filename.endsWith(".zip")
-                    || filename.endsWith(".cbr") || filename.endsWith(".rar");
+            return filename.endsWith(".cb7") || filename.endsWith(".7z")
+                    || filename.endsWith(".cbz") || filename.endsWith(".zip")
+                    || filename.endsWith(".cbr") || filename.endsWith(".rar")
+                    || filename.endsWith(".cbt") || filename.endsWith(".tar");
         }
     }
 

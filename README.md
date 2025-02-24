@@ -8,7 +8,7 @@ List of supported file formats:
 
 * CB7
 * CBR (read only)
-* CBT (Not recommended due to performance issues).
+* CBT
 * CBZ
 
 Supported image formats:

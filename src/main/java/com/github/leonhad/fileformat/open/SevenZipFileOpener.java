@@ -1,8 +1,7 @@
 package com.github.leonhad.fileformat.open;
 
 import com.github.leonhad.document.ImageMetadata;
-import com.github.leonhad.filefilters.CbrFilter;
-import com.github.leonhad.filefilters.RarFilter;
+import com.github.leonhad.filefilters.*;
 import com.github.leonhad.fileformat.FileFactory;
 import com.github.leonhad.fileformat.FileOpener;
 import net.sf.sevenzipjbinding.IInArchive;
@@ -19,7 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 
-public class RARFileOpener extends FileOpener {
+public class SevenZipFileOpener extends FileOpener {
 
     private File file;
     private BufferedImage currentImage;
@@ -72,7 +71,11 @@ public class RARFileOpener extends FileOpener {
     protected FileFilter[] getFilters() {
         return new FileFilter[]{
                 new RarFilter(),
-                new CbrFilter()
+                new SevenZipFilter(),
+                new TarFilter(),
+                new CbrFilter(),
+                new Cb7Filter(),
+                new CbtFilter()
         };
     }
 
