@@ -3,6 +3,7 @@ package com.github.leonhad.fileformat.open;
 import com.github.leonhad.document.ImageMetadata;
 import com.github.leonhad.filefilters.CbrFilter;
 import com.github.leonhad.filefilters.RarFilter;
+import com.github.leonhad.fileformat.FileFactory;
 import com.github.leonhad.fileformat.FileOpener;
 import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.PropID;
@@ -118,7 +119,7 @@ public class RARFileOpener extends FileOpener {
         int itemCount = archive.getNumberOfItems();
         for (int i = 0; i < itemCount; i++) {
             var path = archive.getProperty(i, PropID.PATH).toString();
-            if (!(Boolean) archive.getProperty(i, PropID.IS_FOLDER) && (path.endsWith(".jpg") || path.endsWith(".png"))) {
+            if (!(Boolean) archive.getProperty(i, PropID.IS_FOLDER) && FileFactory.isValidImage(path)) {
                 imageList.add(new ImageMetadata(path, (Long) archive.getProperty(i, PropID.SIZE)));
             }
         }

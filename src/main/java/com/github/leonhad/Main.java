@@ -4,7 +4,9 @@ import com.github.leonhad.forms.MainForm;
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.SevenZipNativeInitializationException;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.util.Arrays;
 
 public class Main {
 
@@ -12,6 +14,8 @@ public class Main {
         System.setProperty("sun.java2d.uiScale.enabled", "true");
         System.setProperty("sun.java2d.uiScale", "1.5");
         System.setProperty("java.awt.headless", "false");
+
+
 
         try {
             SevenZip.initSevenZipFromPlatformJAR();

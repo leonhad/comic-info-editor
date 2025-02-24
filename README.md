@@ -1,10 +1,33 @@
 # Comic Info Editor
 
-This project is a ComicInfo.xml editor for Comic Book files (zip and cbz files formats).
+This project is a ComicInfo.xml editor for Comic Book files.
 
-To run this project, you will need Java at last version 11.
+To run this project, you will need Java at last version 11, and you can get one on https://adoptium.net.
 
-You can get one on https://adoptium.net
+List of supported file formats:
+
+* CB7
+* CBR (read only)
+* CBT (Not recommended due to performance issues).
+* CBZ
+
+Supported image formats:
+
+* Bitmap (BMP)
+* Graphics Interchange Format (GIF)
+* Joint Photographic Experts Group (JPG or JPEG)
+* Portable Network Graphics (PNG)
+* Tagged Image File Format (TIFF)
+
+## Why not CBA?
+
+CBA uses the ACE file format and this file is proprietary and have unfixable security issues.
+
+## How can I create a Comic Book file?
+
+A comic book file is just a compressed file with images. This file can have file and folders and the page orders is based on file name (sorted by number).
+
+So, if you have a folder with images , just compress it (ZIP, for example) and change the name from ZIP do CBZ.
 
 # Licensing
 

@@ -3,6 +3,7 @@ package com.github.leonhad.fileformat.open;
 import com.github.leonhad.document.ImageMetadata;
 import com.github.leonhad.filefilters.CbzFilter;
 import com.github.leonhad.filefilters.ZipFilter;
+import com.github.leonhad.fileformat.FileFactory;
 import com.github.leonhad.fileformat.FileOpener;
 
 import javax.imageio.ImageIO;
@@ -88,7 +89,7 @@ public class ZipFileOpener extends FileOpener {
         var imageList = new ArrayList<ImageMetadata>();
         zipFile.stream().forEach(entry -> {
             var name = entry.getName();
-            if (name.endsWith(".jpg") || name.endsWith(".png")) {
+            if (FileFactory.isValidImage(name)) {
                 imageList.add(new ImageMetadata(name, entry.getSize()));
             }
         });
