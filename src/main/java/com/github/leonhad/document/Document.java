@@ -186,7 +186,7 @@ public class Document {
             throw new IOException("File not loaded yet.");
         }
 
-        try (var fs = FileSystems.newFileSystem(file.toPath(), null)) {
+        try (var fs = FileSystems.newFileSystem(file.toPath(), (ClassLoader) null)) {
             Path source = fs.getPath("/ComicInfo.xml");
 
             try (var out = Files.newOutputStream(source)) {
