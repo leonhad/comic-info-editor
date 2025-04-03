@@ -5,8 +5,7 @@ import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -54,6 +53,15 @@ public class AboutForm extends JDialog {
         var okButton = new JButton("OK");
         okButton.addActionListener(e -> dispose());
         panel.add(okButton, "gapy 10, align 50% 50%, wrap");
+
+        okButton.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    dispose();
+                }
+            }
+        });
 
         this.setContentPane(panel);
         setVisible(true);
