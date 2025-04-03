@@ -2,7 +2,7 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>..\target\comic-info-editor-1.0.jar</jar>
+  <jar>F:\comic-info-editor\target\comic-info-editor-1.1.0-SNAPSHOT.jar</jar>
   <outfile>ComicInfoEditor.exe</outfile>
   <errTitle>This application needs Java 11 or later.</errTitle>
   <cmdLine></cmdLine>
