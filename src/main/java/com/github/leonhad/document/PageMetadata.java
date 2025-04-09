@@ -1,13 +1,6 @@
 package com.github.leonhad.document;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
 public class PageMetadata {
-
-    private final ZipEntry entry;
 
     private final int pageNumber;
 
@@ -15,26 +8,24 @@ public class PageMetadata {
 
     private final int height;
 
+    private final long size;
+
     private PageType type = PageType.STORY;
 
-    public PageMetadata(ZipEntry entry, int pageNumber, int width, int height) {
-        this.entry = entry;
+    public PageMetadata(int pageNumber, long size, int width, int height) {
         this.pageNumber = pageNumber;
+        this.size = size;
         this.width = width;
         this.height = height;
     }
 
-    public PageMetadata(ZipEntry entry, int pageNumber, int width, int height, PageType type) {
-        this(entry, pageNumber, width, height);
+    public PageMetadata(ImageMetadata image, int pageNumber, int width, int height, PageType type) {
+        this(pageNumber, image.getSize(), width, height);
         this.type = type;
     }
 
-    public InputStream createInputStream(ZipFile zipFile) throws IOException {
-        return zipFile.getInputStream(entry);
-    }
-
     public long getSize() {
-        return entry.getSize();
+        return size;
     }
 
     public int getPageNumber() {

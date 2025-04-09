@@ -3,11 +3,15 @@ package com.github.leonhad.forms;
 import com.github.leonhad.components.RatingComponent;
 import com.github.leonhad.document.Metadata;
 import com.github.leonhad.utils.CodeValue;
+import com.github.leonhad.utils.Constants;
 import com.github.leonhad.utils.ISOLanguage;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Function;
@@ -283,6 +287,8 @@ public class InfoForm extends JDialog {
         panel.add(new JLabel("GTIN/ISBN:"));
         panel.add(gtin, "grow, wrap");
 
+        addKeyListener(panel.getComponents());
+
         return panel;
     }
 
@@ -317,5 +323,22 @@ public class InfoForm extends JDialog {
 
         var locale = Locale.getDefault().toLanguageTag();
         languageIso.setSelectedItem(items.stream().filter(x -> x.getIsoCode().equals(locale)).findFirst().orElse(null));
+    }
+
+    private void addKeyListener(Component[] components) {
+        for (var component : components) {
+            component.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                        dispose();
+                    }
+                }
+            });
+
+            if (component instanceof Container) {
+                addKeyListener(((Container) component).getComponents());
+            }
+        }
     }
 }

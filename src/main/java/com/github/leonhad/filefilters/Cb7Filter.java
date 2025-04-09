@@ -3,11 +3,11 @@ package com.github.leonhad.filefilters;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
 
-public class CbzFilter extends FileFilter implements java.io.FileFilter {
+public class Cb7Filter extends FileFilter implements java.io.FileFilter {
 
     @Override
     public String getDescription() {
-        return "Comic Book files (*.cbz)";
+        return "Comic Book files (*.cb7)";
     }
 
     @Override
@@ -16,7 +16,7 @@ public class CbzFilter extends FileFilter implements java.io.FileFilter {
             return true;
         } else {
             String filename = pathname.getName().toLowerCase();
-            return filename.endsWith(".cbz");
+            return filename.endsWith(".cb7");
         }
     }
 

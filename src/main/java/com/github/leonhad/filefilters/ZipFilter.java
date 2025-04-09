@@ -3,7 +3,7 @@ package com.github.leonhad.filefilters;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
 
-public class ZipFilter extends FileFilter {
+public class ZipFilter extends FileFilter implements java.io.FileFilter {
 
     @Override
     public String getDescription() {

@@ -3,9 +3,7 @@ package com.github.leonhad.forms;
 import com.github.leonhad.components.ImageComponent;
 import com.github.leonhad.document.Document;
 import com.github.leonhad.document.PageType;
-import com.github.leonhad.filefilters.AllSupportedFilter;
-import com.github.leonhad.filefilters.CbzFilter;
-import com.github.leonhad.filefilters.ZipFilter;
+import com.github.leonhad.filefilters.*;
 import com.github.leonhad.utils.Constants;
 import com.github.leonhad.utils.OSUtils;
 import com.github.leonhad.utils.StatusBar;
@@ -222,7 +220,13 @@ public class MainForm extends JFrame {
 
         var allSupportedFilter = new AllSupportedFilter();
         openDialog.addChoosableFileFilter(allSupportedFilter);
+        openDialog.addChoosableFileFilter(new SevenZipFilter());
+        openDialog.addChoosableFileFilter(new Cb7Filter());
+        openDialog.addChoosableFileFilter(new CbtFilter());
+        openDialog.addChoosableFileFilter(new CbrFilter());
         openDialog.addChoosableFileFilter(new CbzFilter());
+        openDialog.addChoosableFileFilter(new RarFilter());
+        openDialog.addChoosableFileFilter(new TarFilter());
         openDialog.addChoosableFileFilter(new ZipFilter());
         openDialog.setFileFilter(allSupportedFilter);
 
@@ -310,19 +314,23 @@ public class MainForm extends JFrame {
     }
 
     private void saveAs() {
-        var saveChooser = new JFileChooser("Save As...");
+        var saveDialog = new JFileChooser("Save As...");
 
         var allSupportedFilter = new AllSupportedFilter();
-        saveChooser.addChoosableFileFilter(allSupportedFilter);
-        saveChooser.addChoosableFileFilter(new CbzFilter());
-        saveChooser.addChoosableFileFilter(new ZipFilter());
-        saveChooser.setFileFilter(allSupportedFilter);
-        saveChooser.setCurrentDirectory(document.getFile());
+        saveDialog.addChoosableFileFilter(allSupportedFilter);
+        saveDialog.addChoosableFileFilter(new SevenZipFilter());
+        saveDialog.addChoosableFileFilter(new Cb7Filter());
+        saveDialog.addChoosableFileFilter(new CbtFilter());
+        saveDialog.addChoosableFileFilter(new CbzFilter());
+        saveDialog.addChoosableFileFilter(new TarFilter());
+        saveDialog.addChoosableFileFilter(new ZipFilter());
+        saveDialog.setFileFilter(allSupportedFilter);
+        saveDialog.setCurrentDirectory(document.getFile());
 
-        saveChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        saveDialog.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-        if (saveChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            var selectedFile = saveChooser.getSelectedFile();
+        if (saveDialog.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            var selectedFile = saveDialog.getSelectedFile();
 
             try {
                 if (selectedFile.exists()) {
