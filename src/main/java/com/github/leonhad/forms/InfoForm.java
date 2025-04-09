@@ -3,18 +3,20 @@ package com.github.leonhad.forms;
 import com.github.leonhad.components.RatingComponent;
 import com.github.leonhad.document.Metadata;
 import com.github.leonhad.utils.CodeValue;
-import com.github.leonhad.utils.Constants;
 import com.github.leonhad.utils.ISOLanguage;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class InfoForm extends JDialog {
 
@@ -96,13 +98,17 @@ public class InfoForm extends JDialog {
 
         initFieldData();
 
+        var panel = createFieldPanel();
+
         getContentPane().setLayout(new BorderLayout());
-        getContentPane().add(createFieldPanel(), BorderLayout.CENTER);
+        getContentPane().add(panel, BorderLayout.CENTER);
         getContentPane().add(createOptionsPanel(), BorderLayout.SOUTH);
 
         setMinimumSize(new Dimension(600, 1));
 
         loadMetadata();
+
+        addKeyListener(panel.getComponents());
 
         setVisible(true);
         pack();
@@ -287,8 +293,6 @@ public class InfoForm extends JDialog {
         panel.add(new JLabel("GTIN/ISBN:"));
         panel.add(gtin, "grow, wrap");
 
-        addKeyListener(panel.getComponents());
-
         return panel;
     }
 
@@ -325,8 +329,39 @@ public class InfoForm extends JDialog {
         languageIso.setSelectedItem(items.stream().filter(x -> x.getIsoCode().equals(locale)).findFirst().orElse(null));
     }
 
+    private void addCtrlZAction(Component component, UndoManager undoManager) {
+        component.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                try {
+                    if (e.getKeyCode() == KeyEvent.VK_Z && e.getModifiersEx() == Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()) {
+                        if (undoManager.canUndo()) {
+                            undoManager.undo();
+                        }
+                    } else if (e.getKeyCode() == KeyEvent.VK_Y && e.getModifiersEx() == Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()) {
+                        if (undoManager.canRedo()) {
+                            undoManager.redo();
+                        }
+                    }
+                } catch (CannotUndoException ex) {
+                    Logger.getLogger(InfoForm.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+    }
+
     private void addKeyListener(Component[] components) {
         for (var component : components) {
+            if (component instanceof JTextField) {
+                var undoManager = new UndoManager();
+                ((JTextField) component).getDocument().addUndoableEditListener(undoManager);
+                addCtrlZAction(component, undoManager);
+            } else if (component instanceof JTextArea) {
+                var undoManager = new UndoManager();
+                ((JTextArea) component).getDocument().addUndoableEditListener(undoManager);
+                addCtrlZAction(component, undoManager);
+            }
+
             component.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
