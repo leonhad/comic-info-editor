@@ -1,0 +1,2 @@
+schema: 'https://graphql.anilist.co'
+documents: '**/*.graphql'
