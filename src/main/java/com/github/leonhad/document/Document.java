@@ -32,12 +32,14 @@ public class Document {
 
     public static final String FILE_LOADED = "File loaded.";
     public static final String ERROR_LOADING_FILE = "Error loading file.";
-    private Metadata metadata;
+
     private final List<PageMetadata> pagesMetadata = new ArrayList<>();
     private final File file;
+    private final FileOpener fileOpener;
+
+    private Metadata metadata;
     private boolean fileLoaded = false;
     private BufferedImage currentImage;
-    private final FileOpener fileOpener;
 
     public Document(File file) throws IOException {
         StatusBar.setStatus("Loading file...");
@@ -162,19 +164,7 @@ public class Document {
             var imageList = fileOpener.getImageList();
             var pages = root.getChild("Pages");
             if (pages != null) {
-                try {
-                    for (var page : pages.getChildren()) {
-                        var image = Integer.parseInt(page.getAttributeValue("Image"));
-                        var type = PageType.fromText(page.getAttributeValue("Type"));
-                        var imageWidth = Integer.parseInt(page.getAttributeValue("ImageWidth"));
-                        var imageHeight = Integer.parseInt(page.getAttributeValue("ImageHeight"));
-
-                        pagesMetadata.add(new PageMetadata(imageList.get(image), image, imageWidth, imageHeight, type));
-                    }
-                } catch (Exception ex) {
-                    StatusBar.setImageStatus("Error parsing XML.");
-                    rebuildMetadata();
-                }
+                processMetadata(pages, imageList);
             }
 
             if (pagesMetadata.size() != imageList.size()) {
@@ -185,6 +175,22 @@ public class Document {
             }
         } catch (ParserConfigurationException | SAXException e) {
             throw new IOException(e);
+        }
+    }
+
+    private void processMetadata(Element pages, List<ImageMetadata> imageList) {
+        try {
+            for (var page : pages.getChildren()) {
+                var image = Integer.parseInt(page.getAttributeValue("Image"));
+                var type = PageType.fromText(page.getAttributeValue("Type"));
+                var imageWidth = Integer.parseInt(page.getAttributeValue("ImageWidth"));
+                var imageHeight = Integer.parseInt(page.getAttributeValue("ImageHeight"));
+
+                pagesMetadata.add(new PageMetadata(imageList.get(image), image, imageWidth, imageHeight, type));
+            }
+        } catch (Exception ex) {
+            StatusBar.setImageStatus("Error parsing XML.");
+            rebuildMetadata();
         }
     }
 
