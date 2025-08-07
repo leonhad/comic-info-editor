@@ -22,7 +22,7 @@ public class InfoForm extends JDialog {
 
     private final Metadata metadata;
 
-    private final JTextField title = new JTextField();
+    private final JTextField titleField = new JTextField();
 
     private final JTextField series = new JTextField();
 
@@ -117,7 +117,7 @@ public class InfoForm extends JDialog {
     }
 
     private void loadMetadata() {
-        title.setText(metadata.getTitle());
+        titleField.setText(metadata.getTitle());
         series.setText(metadata.getSeries());
         number.setText(metadata.getNumber());
         count.setText(metadata.getCount());
@@ -156,7 +156,7 @@ public class InfoForm extends JDialog {
     private <T> void selectItem(JComboBox<T> item, Function<T, Boolean> equals) {
         for (int i = 0; i < item.getItemCount(); i++) {
             T t = item.getItemAt(i);
-            if (equals.apply(t)) {
+            if (Boolean.TRUE.equals(equals.apply(t))) {
                 item.setSelectedIndex(i);
                 break;
             }
@@ -164,7 +164,7 @@ public class InfoForm extends JDialog {
     }
 
     private void confirm() {
-        metadata.setTitle(title.getText());
+        metadata.setTitle(titleField.getText());
         metadata.setSeries(series.getText());
         metadata.setNumber(number.getText());
         metadata.setCount(count.getText());
@@ -227,7 +227,7 @@ public class InfoForm extends JDialog {
 
         var panel = new JPanel(new MigLayout("fill", "[][grow][][grow]", ""));
         panel.add(new JLabel("Title:"));
-        panel.add(title, "span, grow, wrap");
+        panel.add(titleField, "span, grow, wrap");
         panel.add(new JLabel("Series:"));
         panel.add(series, "span, grow, wrap");
         panel.add(new JLabel("Issue/Chapter number:"));

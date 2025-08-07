@@ -12,6 +12,9 @@ import java.net.URISyntaxException;
 
 public class AboutForm extends JDialog {
 
+    public static final String GAP_CENTER = "gapy 10, align 50% 50%, wrap";
+    public static final String CENTER = "align 50% 50%, wrap";
+
     public AboutForm(Frame owner) {
         super(owner);
         setResizable(false);
@@ -24,13 +27,13 @@ public class AboutForm extends JDialog {
         var image = new JLabel();
         var icon = Toolkit.getDefaultToolkit().getImage(MainForm.class.getResource("/images/icon.png"));
         image.setIcon(new ImageIcon(icon.getScaledInstance(64, 64, Image.SCALE_SMOOTH)));
-        panel.add(image, "align 50% 50%, wrap");
+        panel.add(image, CENTER);
 
         var title = new JLabel(Constants.TITLE);
         title.setFont(new Font(title.getFont().getName(), Font.BOLD, title.getFont().getSize() * 2));
-        panel.add(title, "align 50% 50%, wrap");
+        panel.add(title, CENTER);
 
-        panel.add(new JLabel("Version " + Constants.VERSION), "gapy 10, align 50% 50%, wrap");
+        panel.add(new JLabel("Version " + Constants.VERSION), GAP_CENTER);
 
         var hyperlink = new JLabel("https://github.com/leonhad/comic-info-editor");
         hyperlink.setForeground(Color.BLUE.darker());
@@ -46,13 +49,13 @@ public class AboutForm extends JDialog {
             }
         });
 
-        panel.add(hyperlink, "align 50% 50%, wrap");
+        panel.add(hyperlink, CENTER);
 
-        panel.add(new JLabel("Licence: Apache License Version 2.0 "), "gapy 10, align 50% 50%, wrap");
+        panel.add(new JLabel("Licence: Apache License Version 2.0 "), GAP_CENTER);
 
         var okButton = new JButton("OK");
         okButton.addActionListener(e -> dispose());
-        panel.add(okButton, "gapy 10, align 50% 50%, wrap");
+        panel.add(okButton, GAP_CENTER);
 
         okButton.addKeyListener(new KeyAdapter() {
             @Override
