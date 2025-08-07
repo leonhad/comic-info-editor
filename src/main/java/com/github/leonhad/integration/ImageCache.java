@@ -1,17 +1,16 @@
 package com.github.leonhad.integration;
 
+import lombok.experimental.UtilityClass;
+
 import javax.swing.*;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+@UtilityClass
 public class ImageCache {
 
     private static final Map<String, ImageIcon> CACHE = new HashMap<>();
-
-    private ImageCache() {
-        // Not for use.
-    }
 
     public static ImageIcon get(URL url) {
         return CACHE.computeIfAbsent(url.toString(), x -> new ImageIcon(url));

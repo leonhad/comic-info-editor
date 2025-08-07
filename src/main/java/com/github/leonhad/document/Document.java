@@ -2,7 +2,8 @@ package com.github.leonhad.document;
 
 import com.github.leonhad.fileformat.FileFactory;
 import com.github.leonhad.fileformat.FileOpener;
-import com.github.leonhad.utils.StatusBar;
+import com.github.leonhad.components.StatusBar;
+import lombok.Getter;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.jdom2.input.DOMBuilder;
@@ -39,6 +40,8 @@ public class Document {
 
     private Metadata metadata;
     private boolean fileLoaded = false;
+
+    @Getter
     private BufferedImage currentImage;
 
     public Document(File file) throws IOException {
@@ -97,10 +100,6 @@ public class Document {
             fileLoaded = false;
             StatusBar.setStatus(ERROR_LOADING_FILE);
         }
-    }
-
-    public BufferedImage getCurrentImage() {
-        return currentImage;
     }
 
     public int getWidth() {

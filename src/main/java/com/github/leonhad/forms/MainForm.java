@@ -6,7 +6,7 @@ import com.github.leonhad.document.PageType;
 import com.github.leonhad.filefilters.*;
 import com.github.leonhad.utils.Constants;
 import com.github.leonhad.utils.OSUtils;
-import com.github.leonhad.utils.StatusBar;
+import com.github.leonhad.components.StatusBar;
 
 import javax.swing.*;
 import java.awt.*;

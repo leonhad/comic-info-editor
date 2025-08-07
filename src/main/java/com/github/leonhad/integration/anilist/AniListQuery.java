@@ -1,5 +1,8 @@
 package com.github.leonhad.integration.anilist;
 
+import lombok.Getter;
+
+@Getter
 public class AniListQuery {
 
     private final String query;
@@ -11,11 +14,4 @@ public class AniListQuery {
         this.variables = new AniListVariables(search);
     }
 
-    public String getQuery() {
-        return query;
-    }
-
-    public AniListVariables getVariables() {
-        return variables;
-    }
 }

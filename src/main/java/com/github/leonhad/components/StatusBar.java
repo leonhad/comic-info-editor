@@ -1,16 +1,15 @@
-package com.github.leonhad.utils;
+package com.github.leonhad.components;
+
+import lombok.experimental.UtilityClass;
 
 import javax.swing.*;
 
+@UtilityClass
 public final class StatusBar {
 
     private static JLabel status;
     private static JLabel imageStatus;
     private static JLabel fileStatus;
-
-    private StatusBar() {
-        // Not used.
-    }
 
     public static void setStatusBar(JLabel status, JLabel fileStatus, JLabel imageStatus) {
         StatusBar.status = status;

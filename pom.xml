@@ -47,10 +47,17 @@
         <sonar.java.source>11</sonar.java.source>
         <sonar.java.libraries>target</sonar.java.libraries>
         <sonar.cpd.exclusions>**/*Form.java</sonar.cpd.exclusions>
-        <sonar.coverage.exclusions>**/*Form.java</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>**/forms/*.java,**/components/*.java</sonar.coverage.exclusions>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.38</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>com.miglayout</groupId>
             <artifactId>miglayout-swing</artifactId>
@@ -104,6 +111,13 @@
                 <configuration>
                     <target>11</target>
                     <source>11</source>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.38</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>

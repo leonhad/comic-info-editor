@@ -19,17 +19,17 @@ import java.util.stream.Collectors;
 @SuppressWarnings("unchecked")
 public class AniList extends MangaQuery {
 
+    private static final String ENDPOINT = "https://graphql.anilist.co";
+
     @Override
     public List<Manga> search(String query) throws SearchException {
-        String endpoint = "https://graphql.anilist.co";
-
         try (var search = AniList.class.getResourceAsStream("/anilist-search.graphql")) {
             assert search != null;
             var queryQl = IOUtils.toString(search, StandardCharsets.UTF_8);
 
             var q = new AniListQuery(queryQl, query);
 
-            var url = URI.create(endpoint).toURL();
+            var url = URI.create(ENDPOINT).toURL();
             var connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
