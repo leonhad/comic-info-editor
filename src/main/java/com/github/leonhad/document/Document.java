@@ -9,6 +9,7 @@ import org.jdom2.input.DOMBuilder;
 import org.jdom2.transform.JDOMSource;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -110,6 +111,8 @@ public class Document {
 
         try {
             var factory = DocumentBuilderFactory.newInstance();
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
             var documentBuilder = factory.newDocumentBuilder();
             org.jdom2.Document document;
             try (var buffer = new BufferedInputStream(inputStream)) {

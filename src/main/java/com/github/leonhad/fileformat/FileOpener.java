@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 public abstract class FileOpener {
 
@@ -23,7 +23,7 @@ public abstract class FileOpener {
 
     public abstract void open(File file) throws IOException;
 
-    public abstract boolean getComicInfo(Function<InputStream, Boolean> consumer);
+    public abstract boolean getComicInfo(Predicate<InputStream> consumer);
 
     public abstract List<ImageMetadata> getImageList();
 

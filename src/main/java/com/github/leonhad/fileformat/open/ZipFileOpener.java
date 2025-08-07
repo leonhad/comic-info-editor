@@ -12,7 +12,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.zip.ZipFile;
 
 public class ZipFileOpener extends FileOpener {
@@ -60,12 +60,12 @@ public class ZipFileOpener extends FileOpener {
     }
 
     @Override
-    public boolean getComicInfo(Function<InputStream, Boolean> consumer) {
+    public boolean getComicInfo(Predicate<InputStream> consumer) {
         try (var zipFile = new ZipFile(file)) {
             var info = zipFile.getEntry("ComicInfo.xml");
             if (info != null) {
                 try (var input = zipFile.getInputStream(info)) {
-                    return consumer.apply(input);
+                    return consumer.test(input);
                 }
             }
         } catch (IOException e) {

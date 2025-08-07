@@ -16,7 +16,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class SevenZipFileOpener extends FileOpener {
 
@@ -94,13 +94,13 @@ public class SevenZipFileOpener extends FileOpener {
     }
 
     @Override
-    public boolean getComicInfo(Function<InputStream, Boolean> consumer) {
+    public boolean getComicInfo(Predicate<InputStream> consumer) {
 
         try (var random = new RandomAccessFile(file, "r");
              var stream = new RandomAccessFileInStream(random);
              var archive = SevenZip.openInArchive(null, stream)) {
 
-            return consumer.apply(getByteArrayInputStream(archive, "ComicInfo.xml"));
+            return consumer.test(getByteArrayInputStream(archive, "ComicInfo.xml"));
         } catch (IOException e) {
             return false;
         }
