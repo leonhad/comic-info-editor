@@ -74,7 +74,7 @@ public class MainForm extends JFrame {
         var imageStatus = new JLabel("", SwingConstants.RIGHT);
         imageStatus.setPreferredSize(new Dimension(100, imageStatus.getPreferredSize().height));
 
-        StatusBar.getInstance().setStatusBar(status, fileStatus, imageStatus);
+        StatusBar.setStatusBar(status, fileStatus, imageStatus);
         panel.add(status, BorderLayout.WEST);
         panel.add(fileStatus, BorderLayout.CENTER);
         panel.add(imageStatus, BorderLayout.EAST);

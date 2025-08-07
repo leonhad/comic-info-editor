@@ -4,31 +4,29 @@ import javax.swing.*;
 
 public final class StatusBar {
 
-    private JLabel status;
-    private JLabel imageStatus;
-    private JLabel fileStatus;
+    private static JLabel status;
+    private static JLabel imageStatus;
+    private static JLabel fileStatus;
 
-    private static final StatusBar INSTANCE = new StatusBar();
-
-    public static StatusBar getInstance() {
-        return INSTANCE;
+    private StatusBar() {
+        // Not used.
     }
 
-    public void setStatusBar(JLabel status, JLabel fileStatus, JLabel imageStatus) {
-        this.status = status;
-        this.fileStatus = fileStatus;
-        this.imageStatus = imageStatus;
+    public static void setStatusBar(JLabel status, JLabel fileStatus, JLabel imageStatus) {
+        StatusBar.status = status;
+        StatusBar.fileStatus = fileStatus;
+        StatusBar.imageStatus = imageStatus;
     }
 
     public static void setStatus(String status) {
-        INSTANCE.status.setText(status);
+        StatusBar.status.setText(status);
     }
 
     public static void setImageStatus(String imageStatus) {
-        INSTANCE.imageStatus.setText(imageStatus);
+        StatusBar.imageStatus.setText(imageStatus);
     }
 
     public static void setFileStatus(String fileStatus) {
-        INSTANCE.fileStatus.setText(fileStatus);
+        StatusBar.fileStatus.setText(fileStatus);
     }
 }
