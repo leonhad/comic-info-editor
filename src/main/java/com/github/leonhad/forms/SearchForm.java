@@ -19,17 +19,11 @@ public class SearchForm extends JDialog {
     private final JButton searchButton = new JButton("Search");
     private final JList<Manga> result = new JList<>();
 
-    public static void main(String[] args) {
-        var search = new SearchForm(null);
-        search.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        search.setVisible(true);
-    }
-
     public SearchForm(Frame parent) {
         super(parent);
         setResizable(false);
 
-        setTitle("Search");
+        setTitle("Search for manga");
 
         addWindowListener(new WindowAdapter() {
             @Override
@@ -81,7 +75,7 @@ public class SearchForm extends JDialog {
 
     private void search() {
         if (searchField.getText().isBlank()) {
-            JOptionPane.showMessageDialog(this, "Please enter a search term.", "Search", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Please enter a search term.", getTitle(), JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 

@@ -89,12 +89,14 @@ public class AniList extends MangaQuery {
     private Manga parseMedia(Map<String, Object> media) {
         var manga = new Manga();
         manga.setId(getInteger(media, "id"));
-        manga.setTitle(getString((Map<String, Object>) media.get("title"), "english"));
+
+        var title = (Map<String, Object>) media.get("title");
+        manga.setTitle(getString(title, "english"));
         if (manga.getTitle() == null) {
-            manga.setTitle(getString((Map<String, Object>) media.get("title"), "romaji"));
+            manga.setTitle(getString(title, "romaji"));
         }
         if (manga.getTitle() == null) {
-            manga.setTitle(getString((Map<String, Object>) media.get("title"), "native"));
+            manga.setTitle(getString(title, "native"));
         }
 
         manga.setCoverImage(getURL((Map<String, Object>)media.get("coverImage"), "medium"));

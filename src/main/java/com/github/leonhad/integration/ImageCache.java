@@ -9,6 +9,10 @@ public class ImageCache {
 
     private static final Map<String, ImageIcon> CACHE = new HashMap<>();
 
+    private ImageCache() {
+        // Not for use.
+    }
+
     public static ImageIcon get(URL url) {
         return CACHE.computeIfAbsent(url.toString(), x -> new ImageIcon(url));
     }

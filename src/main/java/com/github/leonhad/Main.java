@@ -1,7 +1,6 @@
 package com.github.leonhad;
 
 import com.github.leonhad.forms.MainForm;
-import com.github.leonhad.forms.SearchForm;
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.SevenZipNativeInitializationException;
 
