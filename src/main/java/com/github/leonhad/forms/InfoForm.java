@@ -14,13 +14,16 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class InfoForm extends JDialog {
 
-    private final Metadata metadata;
+    public static final String UNKNOWN = "Unknown";
+    public static final String GROW_WRAP = "grow, wrap";
+    public static final String SPAN_GROW_WRAP = "span, grow, wrap";
+    private final transient Metadata metadata;
 
     private final JTextField titleField = new JTextField();
 
@@ -153,10 +156,10 @@ public class InfoForm extends JDialog {
         selectItem(manga, v -> v.getCode().equals(metadata.getManga()));
     }
 
-    private <T> void selectItem(JComboBox<T> item, Function<T, Boolean> equals) {
+    private <T> void selectItem(JComboBox<T> item, Predicate<T> equals) {
         for (int i = 0; i < item.getItemCount(); i++) {
             T t = item.getItemAt(i);
-            if (Boolean.TRUE.equals(equals.apply(t))) {
+            if (equals.test(t)) {
                 item.setSelectedIndex(i);
                 break;
             }
@@ -194,7 +197,7 @@ public class InfoForm extends JDialog {
         metadata.setGtin(gtin.getText());
         metadata.setVolume(volume.getText());
 
-        metadata.setAgeRating((String)ageRating.getSelectedItem());
+        metadata.setAgeRating((String) ageRating.getSelectedItem());
         metadata.setLanguageIso(Optional.ofNullable((ISOLanguage) languageIso.getSelectedItem()).map(ISOLanguage::getIsoCode).orElse(null));
         metadata.setBlackAndWhite(Optional.ofNullable((CodeValue) blackAndWhite.getSelectedItem()).map(CodeValue::getCode).orElse(null));
         metadata.setManga(Optional.ofNullable((CodeValue) manga.getSelectedItem()).map(CodeValue::getCode).orElse(null));
@@ -227,77 +230,77 @@ public class InfoForm extends JDialog {
 
         var panel = new JPanel(new MigLayout("fill", "[][grow][][grow]", ""));
         panel.add(new JLabel("Title:"));
-        panel.add(titleField, "span, grow, wrap");
+        panel.add(titleField, SPAN_GROW_WRAP);
         panel.add(new JLabel("Series:"));
-        panel.add(series, "span, grow, wrap");
+        panel.add(series, SPAN_GROW_WRAP);
         panel.add(new JLabel("Issue/Chapter number:"));
         panel.add(number, "grow");
         panel.add(new JLabel("Book count:"));
-        panel.add(count, "grow, wrap");
+        panel.add(count, GROW_WRAP);
         panel.add(new JLabel("Summary:"));
-        panel.add(new JScrollPane(summary), "span, grow, wrap");
+        panel.add(new JScrollPane(summary), SPAN_GROW_WRAP);
         panel.add(new JLabel("Volume:"));
-        panel.add(volume, "grow, wrap");
+        panel.add(volume, GROW_WRAP);
         panel.add(new JLabel("Year:"));
         panel.add(year, "grow");
         panel.add(new JLabel("Month:"));
-        panel.add(month, "grow, wrap");
+        panel.add(month, GROW_WRAP);
         panel.add(new JLabel("Day:"));
         panel.add(day, "grow");
         panel.add(new JLabel("Language:"));
-        panel.add(languageIso, "grow, wrap");
+        panel.add(languageIso, GROW_WRAP);
         panel.add(new JLabel("Writer:"));
-        panel.add(writer, "span, grow, wrap");
+        panel.add(writer, SPAN_GROW_WRAP);
         panel.add(new JLabel("Penciller:"));
-        panel.add(penciller, "span, grow, wrap");
+        panel.add(penciller, SPAN_GROW_WRAP);
         panel.add(new JLabel("Inker:"));
-        panel.add(inker, "span, grow, wrap");
+        panel.add(inker, SPAN_GROW_WRAP);
         panel.add(new JLabel("Colorist:"));
-        panel.add(colorist, "span, grow, wrap");
+        panel.add(colorist, SPAN_GROW_WRAP);
         panel.add(new JLabel("Letterer:"));
-        panel.add(letterer, "span, grow, wrap");
+        panel.add(letterer, SPAN_GROW_WRAP);
         panel.add(new JLabel("Cover artist:"));
-        panel.add(coverArtist, "span, grow, wrap");
+        panel.add(coverArtist, SPAN_GROW_WRAP);
         panel.add(new JLabel("Editor:"));
-        panel.add(editor, "span, grow, wrap");
+        panel.add(editor, SPAN_GROW_WRAP);
         panel.add(new JLabel("Translator:"));
-        panel.add(translator, "span, grow, wrap");
+        panel.add(translator, SPAN_GROW_WRAP);
         panel.add(new JLabel("Publisher:"));
-        panel.add(publisher, "span, grow, wrap");
+        panel.add(publisher, SPAN_GROW_WRAP);
         panel.add(new JLabel("Imprint:"));
-        panel.add(imprint, "span, grow, wrap");
+        panel.add(imprint, SPAN_GROW_WRAP);
         panel.add(new JLabel("Genre:"));
-        panel.add(genre, "span, grow, wrap");
+        panel.add(genre, SPAN_GROW_WRAP);
         panel.add(new JLabel("Tags:"));
-        panel.add(tags, "span, grow, wrap");
+        panel.add(tags, SPAN_GROW_WRAP);
         panel.add(new JLabel("Web:"));
-        panel.add(web, "span, grow, wrap");
+        panel.add(web, SPAN_GROW_WRAP);
         panel.add(new JLabel("Characters:"));
-        panel.add(characters, "span, grow, wrap");
+        panel.add(characters, SPAN_GROW_WRAP);
         panel.add(new JLabel("Teams:"));
-        panel.add(teams, "span, grow, wrap");
+        panel.add(teams, SPAN_GROW_WRAP);
         panel.add(new JLabel("Locations:"));
-        panel.add(locations, "span, grow, wrap");
+        panel.add(locations, SPAN_GROW_WRAP);
         panel.add(new JLabel("Scan Information:"));
-        panel.add(scanInformation, "span, grow, wrap");
+        panel.add(scanInformation, SPAN_GROW_WRAP);
         panel.add(new JLabel("Format:"));
         panel.add(format, "grow");
         panel.add(new JLabel("Age rating:"));
-        panel.add(ageRating, "grow, wrap");
+        panel.add(ageRating, GROW_WRAP);
         panel.add(new JLabel("Black & white:"));
         panel.add(blackAndWhite, "grow");
         panel.add(new JLabel("Manga:"));
-        panel.add(manga, "grow, wrap");
+        panel.add(manga, GROW_WRAP);
         panel.add(new JLabel("Community rating:"));
         panel.add(communityRating);
         panel.add(new JLabel("GTIN/ISBN:"));
-        panel.add(gtin, "grow, wrap");
+        panel.add(gtin, GROW_WRAP);
 
         return panel;
     }
 
     private void initFieldData() {
-        ageRating.addItem("Unknown");
+        ageRating.addItem(UNKNOWN);
         ageRating.addItem("Rating Pending");
         ageRating.addItem("Early Childhood");
         ageRating.addItem("Everyone");
@@ -313,11 +316,11 @@ public class InfoForm extends JDialog {
         ageRating.addItem("Adults Only 18+");
         ageRating.addItem("X18+");
 
-        blackAndWhite.addItem(new CodeValue("Unknown", "Unknown"));
+        blackAndWhite.addItem(new CodeValue(UNKNOWN, UNKNOWN));
         blackAndWhite.addItem(new CodeValue("No", "No"));
         blackAndWhite.addItem(new CodeValue("Yes", "Yes"));
 
-        manga.addItem(new CodeValue("Unknown", "Unknown"));
+        manga.addItem(new CodeValue(UNKNOWN, UNKNOWN));
         manga.addItem(new CodeValue("No", "No"));
         manga.addItem(new CodeValue("Yes", "Yes"));
         manga.addItem(new CodeValue("YesAndRightToLeft", "Yes and right to left"));
@@ -334,14 +337,10 @@ public class InfoForm extends JDialog {
             @Override
             public void keyPressed(KeyEvent e) {
                 try {
-                    if (e.getKeyCode() == KeyEvent.VK_Z && e.getModifiersEx() == Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()) {
-                        if (undoManager.canUndo()) {
-                            undoManager.undo();
-                        }
-                    } else if (e.getKeyCode() == KeyEvent.VK_Y && e.getModifiersEx() == Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()) {
-                        if (undoManager.canRedo()) {
-                            undoManager.redo();
-                        }
+                    if (e.getKeyCode() == KeyEvent.VK_Z && e.getModifiersEx() == Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx() && undoManager.canUndo()) {
+                        undoManager.undo();
+                    } else if (e.getKeyCode() == KeyEvent.VK_Y && e.getModifiersEx() == Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx() && undoManager.canRedo()) {
+                        undoManager.redo();
                     }
                 } catch (CannotUndoException ex) {
                     Logger.getLogger(InfoForm.class.getName()).log(Level.SEVERE, null, ex);

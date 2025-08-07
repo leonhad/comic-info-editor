@@ -18,7 +18,7 @@ import java.util.Optional;
 
 public class MainForm extends JFrame {
 
-    private Document document;
+    private transient Document document;
 
     private final ImageComponent imageComponent = new ImageComponent();
 
@@ -123,7 +123,7 @@ public class MainForm extends JFrame {
             try {
                 document.setPageType(null);
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
             }
         });
         setPageType.add(none);
@@ -137,7 +137,7 @@ public class MainForm extends JFrame {
                 try {
                     document.setPageType(type);
                 } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
                 }
             });
             setPageType.add(item);
@@ -251,7 +251,7 @@ public class MainForm extends JFrame {
                 this.setTitle(Constants.TITLE + " - " + file.getName());
 
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
             }
         });
     }
@@ -271,7 +271,7 @@ public class MainForm extends JFrame {
             imageComponent.setImage(document.getCurrentImage());
             this.getContentPane().repaint();
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -281,7 +281,7 @@ public class MainForm extends JFrame {
             imageComponent.setImage(document.getCurrentImage());
             this.getContentPane().repaint();
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -291,7 +291,7 @@ public class MainForm extends JFrame {
             imageComponent.setImage(document.getCurrentImage());
             this.getContentPane().repaint();
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -301,7 +301,7 @@ public class MainForm extends JFrame {
             imageComponent.setImage(document.getCurrentImage());
             this.getContentPane().repaint();
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -309,7 +309,7 @@ public class MainForm extends JFrame {
         try {
             document.save();
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -342,7 +342,7 @@ public class MainForm extends JFrame {
                     document.saveAs(selectedFile.toPath());
                 }
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
             }
         }
     }
