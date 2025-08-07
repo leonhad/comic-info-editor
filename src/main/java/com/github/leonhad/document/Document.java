@@ -113,6 +113,7 @@ public class Document {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            factory.setExpandEntityReferences(false);
 
             var documentBuilder = factory.newDocumentBuilder();
             org.jdom2.Document document;
