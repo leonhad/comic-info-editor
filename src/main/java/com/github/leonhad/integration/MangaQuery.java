@@ -3,6 +3,7 @@ package com.github.leonhad.integration;
 import com.github.leonhad.exception.SearchException;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ public abstract class MangaQuery {
                 .map(Object::toString)
                 .map(x -> {
                     try {
-                        return new URL(x);
+                        return URI.create(x).toURL();
                     } catch (MalformedURLException e) {
                         return null;
                     }

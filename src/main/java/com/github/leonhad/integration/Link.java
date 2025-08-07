@@ -2,7 +2,7 @@ package com.github.leonhad.integration;
 
 import java.net.URL;
 
-public class Site {
+public class Link {
 
     private URL icon;
     private String language;

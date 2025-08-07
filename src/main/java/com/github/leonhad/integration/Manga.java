@@ -21,7 +21,7 @@ public class Manga {
     private List<String> characters;
     private List<Staff> staff;
     private URL siteUrl;
-    private List<Site> externalLinks;
+    private List<Link> externalLinks;
 
     public Integer getId() {
         return id;
@@ -151,11 +151,11 @@ public class Manga {
         this.siteUrl = siteUrl;
     }
 
-    public List<Site> getExternalLinks() {
+    public List<Link> getExternalLinks() {
         return externalLinks;
     }
 
-    public void setExternalLinks(List<Site> externalLinks) {
+    public void setExternalLinks(List<Link> externalLinks) {
         this.externalLinks = externalLinks;
     }
 }

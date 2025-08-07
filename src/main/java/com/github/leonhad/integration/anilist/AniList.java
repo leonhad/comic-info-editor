@@ -1,9 +1,9 @@
 package com.github.leonhad.integration.anilist;
 
 import com.github.leonhad.exception.SearchException;
+import com.github.leonhad.integration.Link;
 import com.github.leonhad.integration.Manga;
 import com.github.leonhad.integration.MangaQuery;
-import com.github.leonhad.integration.Site;
 import com.github.leonhad.integration.Staff;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
@@ -11,7 +11,7 @@ import org.apache.commons.io.IOUtils;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,7 +29,7 @@ public class AniList extends MangaQuery {
 
             var q = new AniListQuery(queryQl, query);
 
-            var url = new URL(endpoint);
+            var url = URI.create(endpoint).toURL();
             var connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
@@ -90,6 +90,13 @@ public class AniList extends MangaQuery {
         var manga = new Manga();
         manga.setId(getInteger(media, "id"));
         manga.setTitle(getString((Map<String, Object>) media.get("title"), "english"));
+        if (manga.getTitle() == null) {
+            manga.setTitle(getString((Map<String, Object>) media.get("title"), "romaji"));
+        }
+        if (manga.getTitle() == null) {
+            manga.setTitle(getString((Map<String, Object>) media.get("title"), "native"));
+        }
+
         manga.setCoverImage(getURL((Map<String, Object>)media.get("coverImage"), "medium"));
         manga.setDescription(getString(media, "description"));
         manga.setVolumes(getInteger(media, "volumes"));
@@ -106,10 +113,10 @@ public class AniList extends MangaQuery {
         return manga;
     }
 
-    private List<Site> parseExternalLink(List<Map<String, Object>> externalLinks) {
+    private List<Link> parseExternalLink(List<Map<String, Object>> externalLinks) {
         return Optional.ofNullable(externalLinks)
                 .map(link -> link.stream().map(x -> {
-                    var site = new Site();
+                    var site = new Link();
                     site.setIcon(getURL(x, "icon"));
                     site.setLanguage(getString(x, "language"));
                     site.setSite(getString(x, "site"));
