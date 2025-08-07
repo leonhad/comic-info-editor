@@ -122,7 +122,7 @@ public class SevenZipFileOpener extends FileOpener {
         int itemCount = archive.getNumberOfItems();
         for (int i = 0; i < itemCount; i++) {
             var path = archive.getProperty(i, PropID.PATH).toString();
-            if (!(Boolean) archive.getProperty(i, PropID.IS_FOLDER) && FileFactory.isValidImage(path)) {
+            if (!(boolean) archive.getProperty(i, PropID.IS_FOLDER) && FileFactory.isValidImage(path)) {
                 imageList.add(new ImageMetadata(path, (Long) archive.getProperty(i, PropID.SIZE)));
             }
         }

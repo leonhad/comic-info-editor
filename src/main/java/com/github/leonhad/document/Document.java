@@ -30,6 +30,8 @@ import java.util.zip.ZipOutputStream;
 
 public class Document {
 
+    public static final String FILE_LOADED = "File loaded.";
+    public static final String ERROR_LOADING_FILE = "Error loading file.";
     private Metadata metadata;
     private final List<PageMetadata> pagesMetadata = new ArrayList<>();
     private final File file;
@@ -48,9 +50,9 @@ public class Document {
             var info = fileOpener.getComicInfo(inputStream -> {
                 try {
                     loadMetadata(inputStream);
-                    StatusBar.setStatus("File loaded.");
+                    StatusBar.setStatus(FILE_LOADED);
                 } catch (IOException e) {
-                    StatusBar.setStatus("Error loading file.");
+                    StatusBar.setStatus(ERROR_LOADING_FILE);
                     return false;
                 }
 
@@ -62,10 +64,10 @@ public class Document {
                 rebuildMetadata();
             } else {
                 fileLoaded = true;
-                StatusBar.setStatus("File loaded.");
+                StatusBar.setStatus(FILE_LOADED);
             }
         } catch (IOException e) {
-            StatusBar.setStatus("Error loading file.");
+            StatusBar.setStatus(ERROR_LOADING_FILE);
             throw e;
         }
     }
@@ -88,10 +90,10 @@ public class Document {
             }
 
             fileLoaded = true;
-            StatusBar.setStatus("File loaded.");
+            StatusBar.setStatus(FILE_LOADED);
         } catch (IOException ex) {
             fileLoaded = false;
-            StatusBar.setStatus("Error loading file.");
+            StatusBar.setStatus(ERROR_LOADING_FILE);
         }
     }
 

@@ -15,7 +15,6 @@ public class Main {
 
         try {
             SevenZip.initSevenZipFromPlatformJAR();
-            System.out.println("7-Zip-JBinding library was initialized");
         } catch (SevenZipNativeInitializationException e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Unexpected Error", JOptionPane.ERROR_MESSAGE);
         }

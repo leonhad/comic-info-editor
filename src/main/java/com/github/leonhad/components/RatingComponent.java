@@ -128,7 +128,14 @@ public class RatingComponent extends JPanel {
             repaintIcon(index);
         } else {
             for (int i = 0; i < labelList.size(); i++) {
-                labelList.get(i).setIcon(i <= index ? iconRoverList.get(i) : (i <= clicked ? iconList.get(i) : defaultIcon));
+                var icon = defaultIcon;
+                if (i <= index) {
+                    icon = iconRoverList.get(i);
+                } else if (i <= clicked) {
+                    icon = iconList.get(i);
+                }
+
+                labelList.get(i).setIcon(icon);
             }
 
             repaint();

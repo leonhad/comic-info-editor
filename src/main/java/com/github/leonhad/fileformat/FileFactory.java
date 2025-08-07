@@ -17,6 +17,10 @@ public final class FileFactory {
     private static final List<String> IMAGE_EXTENSIONS = Stream.of(ImageIO.getReaderFileSuffixes())
             .map(String::toLowerCase).collect(Collectors.toList());
 
+    private FileFactory() {
+        // Not for use.
+    }
+
     public static FileOpener getOpener(File file) throws IOException {
         var opener = FILE_OPENERS.stream().filter(f -> f.canOpen(file))
                 .findFirst()

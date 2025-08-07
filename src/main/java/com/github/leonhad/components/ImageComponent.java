@@ -6,7 +6,7 @@ import java.awt.image.BufferedImage;
 
 public class ImageComponent extends JComponent {
 
-    private BufferedImage image;
+    private transient BufferedImage image;
 
     public void setImage(BufferedImage image) {
         this.image = image;
