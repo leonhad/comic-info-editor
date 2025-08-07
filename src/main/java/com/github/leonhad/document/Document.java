@@ -12,6 +12,7 @@ import org.xml.sax.SAXException;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLInputFactory;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
@@ -110,7 +111,7 @@ public class Document {
         this.metadata = new Metadata();
 
         try {
-            var factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 
             var documentBuilder = factory.newDocumentBuilder();
@@ -296,7 +297,9 @@ public class Document {
         document.setContent(root);
 
         try {
-            var transformerFactory = TransformerFactory.newInstance();
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            transformerFactory.setFeature(XMLInputFactory.SUPPORT_DTD, false);
+
             var transformer = transformerFactory.newTransformer();
             var source = new JDOMSource(document);
             var result = new StreamResult(out);
