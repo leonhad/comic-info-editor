@@ -1,8 +1,8 @@
 package com.github.leonhad.document;
 
+import com.github.leonhad.components.StatusBar;
 import com.github.leonhad.fileformat.FileFactory;
 import com.github.leonhad.fileformat.FileOpener;
-import com.github.leonhad.components.StatusBar;
 import lombok.Getter;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
@@ -35,9 +35,11 @@ public class Document {
     public static final String ERROR_LOADING_FILE = "Error loading file.";
 
     private final List<PageMetadata> pagesMetadata = new ArrayList<>();
+    @Getter
     private final File file;
     private final FileOpener fileOpener;
 
+    @Getter
     private Metadata metadata;
     private boolean fileLoaded = false;
 
@@ -307,6 +309,8 @@ public class Document {
         try {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             transformerFactory.setFeature(XMLInputFactory.SUPPORT_DTD, false);
+            transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
 
             var transformer = transformerFactory.newTransformer();
             var source = new JDOMSource(document);
@@ -330,7 +334,7 @@ public class Document {
     }
 
     private void updateStatus() {
-        if(fileLoaded) {
+        if (fileLoaded) {
             StatusBar.setImageStatus(pagesMetadata.get(fileOpener.getIndex()).getType().getDescription());
         }
     }
@@ -355,10 +359,6 @@ public class Document {
         updateStatus();
     }
 
-    public Metadata getMetadata() {
-        return metadata;
-    }
-
     public void setPageType(PageType pageType) throws IOException {
         if (!fileLoaded) {
             throw new IOException("File not loaded yet.");
@@ -368,7 +368,4 @@ public class Document {
         StatusBar.setImageStatus(Optional.ofNullable(pagesMetadata.get(fileOpener.getIndex()).getType()).map(PageType::getDescription).orElse(""));
     }
 
-    public File getFile() {
-        return file;
-    }
 }
