@@ -2,7 +2,7 @@
 
 This project is a ComicInfo.xml editor for Comic Book files.
 
-To run this project, you will need Java at last version 11, and you can get one on https://adoptium.net.
+To run this project, you will need Java at last version 11, and you can get one on <https://adoptium.net>.
 
 List of supported file formats:
 
