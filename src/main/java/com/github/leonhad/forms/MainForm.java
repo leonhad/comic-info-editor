@@ -1,12 +1,12 @@
 package com.github.leonhad.forms;
 
 import com.github.leonhad.components.ImageComponent;
+import com.github.leonhad.components.StatusBar;
 import com.github.leonhad.document.Document;
 import com.github.leonhad.document.PageType;
 import com.github.leonhad.filefilters.*;
 import com.github.leonhad.utils.Constants;
 import com.github.leonhad.utils.OSUtils;
-import com.github.leonhad.components.StatusBar;
 
 import javax.swing.*;
 import java.awt.*;
@@ -258,10 +258,10 @@ public class MainForm extends JFrame {
 
     private void showImage() {
         imageComponent.setImage(document.getCurrentImage());
-        float height = this.getHeight();
-        float proportion = document.getHeight() / height;
+        int height = this.getHeight();
+        float proportion = document.getHeight() / (float) height;
 
-        imageComponent.setPreferredSize(new Dimension((int) (document.getWidth() / proportion), (int) height));
+        imageComponent.setPreferredSize(new Dimension((int) (document.getWidth() / proportion), height));
         this.pack();
     }
 

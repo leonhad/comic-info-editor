@@ -4,6 +4,7 @@ import com.github.leonhad.components.StatusBar;
 import com.github.leonhad.fileformat.FileFactory;
 import com.github.leonhad.fileformat.FileOpener;
 import lombok.Getter;
+import lombok.extern.java.Log;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.jdom2.input.DOMBuilder;
@@ -13,7 +14,6 @@ import org.xml.sax.SAXException;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
@@ -25,10 +25,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+@Log
 public class Document {
 
     public static final String FILE_LOADED = "File loaded.";
@@ -244,6 +246,7 @@ public class Document {
                     }
                     StatusBar.setStatus("File saved.");
                 } catch (Exception e) {
+                    log.log(Level.SEVERE, "Unexpected error saving file.", e);
                     StatusBar.setStatus("Unexpected error saving file.");
                 }
 
@@ -308,7 +311,7 @@ public class Document {
 
         try {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            transformerFactory.setFeature(XMLInputFactory.SUPPORT_DTD, false);
+            transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
             transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
 
