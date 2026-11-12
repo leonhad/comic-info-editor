@@ -3,6 +3,7 @@ package com.github.leonhad.fileformat;
 import com.github.leonhad.fileformat.open.SevenZipFileOpener;
 import com.github.leonhad.fileformat.open.ZipFileOpener;
 import com.github.leonhad.fileformat.save.SevenZipFileSaver;
+import com.github.leonhad.fileformat.save.TarFileSaver;
 import com.github.leonhad.fileformat.save.ZipFileSaver;
 
 import javax.imageio.ImageIO;
@@ -16,7 +17,7 @@ public final class FileFactory {
 
     private static final List<FileOpener> FILE_OPENERS = List.of(new ZipFileOpener(), new SevenZipFileOpener());
 
-    private static final List<FileSaver> FILE_WRITERS = List.of(new ZipFileSaver(), new SevenZipFileSaver());
+    private static final List<FileSaver> FILE_WRITERS = List.of(new ZipFileSaver(), new SevenZipFileSaver(), new TarFileSaver());
 
     private static final List<String> IMAGE_EXTENSIONS = Stream.of(ImageIO.getReaderFileSuffixes())
             .map(String::toLowerCase).collect(Collectors.toList());

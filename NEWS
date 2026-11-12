@@ -1,5 +1,7 @@
 Comic Info Editor NEWS - User visible changes.
 
+2026-11-12 7zip file saving.
+2026-11-11 Fixed loading performance.
 2025-06-12 Added AniList integration support.
 2025-04-08 Added new formats and Ctrl+Z command.
 2025-02-22 Initial version.
