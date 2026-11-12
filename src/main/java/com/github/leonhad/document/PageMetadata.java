@@ -1,5 +1,11 @@
 package com.github.leonhad.document;
 
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Optional;
+
+@Getter
 public class PageMetadata {
 
     private final int pageNumber;
@@ -10,6 +16,7 @@ public class PageMetadata {
 
     private final long size;
 
+    @Setter
     private PageType type = PageType.STORY;
 
     public PageMetadata(int pageNumber, long size, int width, int height) {
@@ -20,31 +27,8 @@ public class PageMetadata {
     }
 
     public PageMetadata(ImageMetadata image, int pageNumber, int width, int height, PageType type) {
-        this(pageNumber, image.getSize(), width, height);
+        this(pageNumber, Optional.ofNullable(image.getImage()).map(b -> (long) b.length).orElse(0L), width, height);
         this.type = type;
     }
 
-    public long getSize() {
-        return size;
-    }
-
-    public int getPageNumber() {
-        return pageNumber;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public PageType getType() {
-        return type;
-    }
-
-    public void setType(PageType type) {
-        this.type = type;
-    }
 }

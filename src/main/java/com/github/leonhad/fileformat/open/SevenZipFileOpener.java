@@ -4,52 +4,28 @@ import com.github.leonhad.document.ImageMetadata;
 import com.github.leonhad.filefilters.*;
 import com.github.leonhad.fileformat.FileFactory;
 import com.github.leonhad.fileformat.FileOpener;
-import net.sf.sevenzipjbinding.IInArchive;
-import net.sf.sevenzipjbinding.PropID;
-import net.sf.sevenzipjbinding.SevenZip;
-import net.sf.sevenzipjbinding.SevenZipException;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import net.sf.sevenzipjbinding.*;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class SevenZipFileOpener extends FileOpener {
 
-    private File file;
-    private BufferedImage currentImage;
+    private RandomAccessFile random;
+    private RandomAccessFileInStream stream;
+    private IInArchive archive;
+
     private List<ImageMetadata> imageList;
 
-    @Override
-    public int getImageCount() {
-        return imageList.size();
-    }
-
-    @Override
-    protected void loadImage() throws IOException {
-        this.currentImage = readImage(imageList.get(getIndex()));
-    }
-
-    @Override
-    public BufferedImage readImage(ImageMetadata image) throws IOException {
-        try (var random = new RandomAccessFile(file, "r");
-             var stream = new RandomAccessFileInStream(random);
-             var archive = SevenZip.openInArchive(null, stream)) {
-
-            return ImageIO.read(getByteArrayInputStream(archive, image.getFileName()));
-        }
-    }
-
-    private static ByteArrayInputStream getByteArrayInputStream(IInArchive archive, String fileName) throws IOException {
-
+    private static ByteArrayInputStream getComicInfo(IInArchive archive) throws IOException {
         var simpleInArchive = archive.getSimpleInterface();
 
         for (var item : simpleInArchive.getArchiveItems()) {
-            if (item.getPath().equals(fileName)) {
+            if (item.getPath().equals("ComicInfo.xml")) {
                 var out = new ByteArrayOutputStream();
                 item.extractSlow(data -> {
                     try {
@@ -64,7 +40,7 @@ public class SevenZipFileOpener extends FileOpener {
             }
         }
 
-        throw new IOException("File not found.");
+        throw new IOException("ComicInfo.xml not found.");
     }
 
     @Override
@@ -81,26 +57,20 @@ public class SevenZipFileOpener extends FileOpener {
 
     @Override
     public void open(File file) throws IOException {
-        this.file = file;
+        random = new RandomAccessFile(file, "r");
+        stream = new RandomAccessFileInStream(random);
+        archive = SevenZip.openInArchive(null, stream);
 
-        try (var random = new RandomAccessFile(file, "r");
-             var stream = new RandomAccessFileInStream(random);
-             var archive = SevenZip.openInArchive(null, stream)) {
-
-            imageList = getImageList(archive);
-            var image = imageList.stream().findFirst().orElseThrow(() -> new IOException("No image found"));
-            currentImage = ImageIO.read(getByteArrayInputStream(archive, image.getFileName()));
+        imageList = getImageList(archive);
+        if (imageList.isEmpty()) {
+            throw new IOException("No image found");
         }
     }
 
     @Override
     public boolean getComicInfo(Predicate<InputStream> consumer) {
-
-        try (var random = new RandomAccessFile(file, "r");
-             var stream = new RandomAccessFileInStream(random);
-             var archive = SevenZip.openInArchive(null, stream)) {
-
-            return consumer.test(getByteArrayInputStream(archive, "ComicInfo.xml"));
+        try {
+            return consumer.test(getComicInfo(archive));
         } catch (IOException e) {
             return false;
         }
@@ -111,23 +81,87 @@ public class SevenZipFileOpener extends FileOpener {
         return imageList;
     }
 
-    @Override
-    public BufferedImage getCurrentImage() {
-        return currentImage;
-    }
-
     private static List<ImageMetadata> getImageList(IInArchive archive) throws SevenZipException {
         var imageList = new ArrayList<ImageMetadata>();
+        var listItems = new ArrayList<Integer>();
 
         int itemCount = archive.getNumberOfItems();
+
         for (int i = 0; i < itemCount; i++) {
             var path = archive.getProperty(i, PropID.PATH).toString();
+
             if (!(boolean) archive.getProperty(i, PropID.IS_FOLDER) && FileFactory.isValidImage(path)) {
-                imageList.add(new ImageMetadata(path, (Long) archive.getProperty(i, PropID.SIZE)));
+                listItems.add(i);
+                imageList.add(new ImageMetadata(path));
             }
         }
 
+        archive.extract(listItems.stream().mapToInt(Integer::intValue).toArray(), false, new ExtractCallback(archive, imageList));
+
         imageList.sort(Comparator.comparing(ImageMetadata::getFileName, String.CASE_INSENSITIVE_ORDER));
         return imageList;
+    }
+
+    @RequiredArgsConstructor
+    private static class ExtractCallback implements IArchiveExtractCallback {
+
+        private final IInArchive archive;
+
+        private final ArrayList<ImageMetadata> imageList;
+
+        private int currentIndex;
+
+        // Map to accumulate chunks for each archive item
+        private final Map<Integer, ByteArrayOutputStream> streamMap = new HashMap<>();
+
+        @Override
+        public void setTotal(long total) {
+            // Not used.
+        }
+
+        @Override
+        public void setCompleted(long complete) {
+            // Not used.
+        }
+
+        @Override
+        public ISequentialOutStream getStream(int index, ExtractAskMode extractAskMode) {
+            if (extractAskMode != ExtractAskMode.EXTRACT) {
+                return null;
+            }
+
+            currentIndex = index;
+            var out = new ByteArrayOutputStream();
+            streamMap.put(index, out);
+            return data -> {
+                out.write(data, 0, data.length);
+                return data.length;
+            };
+        }
+
+        @Override
+        public void prepareOperation(ExtractAskMode extractAskMode) {
+            // Not used.
+        }
+
+        @Override
+        public void setOperationResult(ExtractOperationResult extractOperationResult) throws SevenZipException {
+            // After extraction completes, transfer accumulated data to ImageMetadata
+            var out = streamMap.get(currentIndex);
+            if (out != null) {
+                var path = archive.getProperty(currentIndex, PropID.PATH).toString();
+                imageList.stream()
+                        .filter(i -> i.getFileName().equals(path))
+                        .findAny()
+                        .ifPresent(i -> i.setImage(out.toByteArray()));
+            }
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        stream.close();
+        random.close();
+        archive.close();
     }
 }

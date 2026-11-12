@@ -257,12 +257,16 @@ public class MainForm extends JFrame {
     }
 
     private void showImage() {
-        imageComponent.setImage(document.getCurrentImage());
-        int height = this.getHeight();
-        float proportion = document.getHeight() / (float) height;
+        try {
+            imageComponent.setImage(document.getCurrentImage());
+            int height = this.getHeight();
+            float proportion = document.getHeight() / (float) height;
 
-        imageComponent.setPreferredSize(new Dimension((int) (document.getWidth() / proportion), height));
-        this.pack();
+            imageComponent.setPreferredSize(new Dimension((int) (document.getWidth() / proportion), height));
+            this.pack();
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void nextPage() {

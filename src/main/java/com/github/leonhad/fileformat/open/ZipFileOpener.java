@@ -6,9 +6,10 @@ import com.github.leonhad.filefilters.ZipFilter;
 import com.github.leonhad.fileformat.FileFactory;
 import com.github.leonhad.fileformat.FileOpener;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -17,28 +18,8 @@ import java.util.zip.ZipFile;
 
 public class ZipFileOpener extends FileOpener {
 
-    private File file;
-    private BufferedImage currentImage;
+    private ZipFile zipFile;
     private List<ImageMetadata> imageList;
-
-    @Override
-    public int getImageCount() {
-        return imageList.size();
-    }
-
-    @Override
-    protected void loadImage() throws IOException {
-        this.currentImage = readImage(imageList.get(getIndex()));
-    }
-
-    @Override
-    public BufferedImage readImage(ImageMetadata image) throws IOException {
-        try (var zipFile = new ZipFile(file);
-             var input = zipFile.getInputStream(zipFile.getEntry(image.getFileName()));
-             var buffer = new BufferedInputStream(input)) {
-            return ImageIO.read(buffer);
-        }
-    }
 
     @Override
     protected FileFilter[] getFilters() {
@@ -50,18 +31,17 @@ public class ZipFileOpener extends FileOpener {
 
     @Override
     public void open(File file) throws IOException {
-        this.file = file;
+        zipFile = new ZipFile(file);
 
-        try (var zipFile = new ZipFile(file)) {
-            imageList = getImageList(zipFile);
-            var image = imageList.stream().findFirst().orElseThrow(() -> new IOException("No image found"));
-            currentImage = loadImage(zipFile.getInputStream(zipFile.getEntry(image.getFileName())));
+        imageList = getImageList(zipFile);
+        if (imageList.isEmpty()) {
+            throw new IOException("No image found");
         }
     }
 
     @Override
     public boolean getComicInfo(Predicate<InputStream> consumer) {
-        try (var zipFile = new ZipFile(file)) {
+        try {
             var info = zipFile.getEntry("ComicInfo.xml");
             if (info != null) {
                 try (var input = zipFile.getInputStream(info)) {
@@ -80,21 +60,26 @@ public class ZipFileOpener extends FileOpener {
         return imageList;
     }
 
-    @Override
-    public BufferedImage getCurrentImage() {
-        return currentImage;
-    }
-
-    private static List<ImageMetadata> getImageList(ZipFile zipFile) {
+    private static List<ImageMetadata> getImageList(ZipFile zipFile) throws IOException {
         var imageList = new ArrayList<ImageMetadata>();
-        zipFile.stream().forEach(entry -> {
+        var i = zipFile.entries().asIterator();
+        while (i.hasNext()) {
+            var entry = i.next();
             var name = entry.getName();
             if (FileFactory.isValidImage(name)) {
-                imageList.add(new ImageMetadata(name, entry.getSize()));
+                var input = zipFile.getInputStream(entry);
+                var bytes = input.readAllBytes();
+
+                imageList.add(new ImageMetadata(name, bytes));
             }
-        });
+        }
 
         imageList.sort(Comparator.comparing(ImageMetadata::getFileName, String.CASE_INSENSITIVE_ORDER));
         return imageList;
+    }
+
+    @Override
+    public void close() throws Exception {
+        zipFile.close();
     }
 }

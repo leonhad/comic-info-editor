@@ -2,6 +2,8 @@ package com.github.leonhad.fileformat;
 
 import com.github.leonhad.fileformat.open.SevenZipFileOpener;
 import com.github.leonhad.fileformat.open.ZipFileOpener;
+import com.github.leonhad.fileformat.save.SevenZipFileSaver;
+import com.github.leonhad.fileformat.save.ZipFileSaver;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -13,6 +15,8 @@ import java.util.stream.Stream;
 public final class FileFactory {
 
     private static final List<FileOpener> FILE_OPENERS = List.of(new ZipFileOpener(), new SevenZipFileOpener());
+
+    private static final List<FileSaver> FILE_WRITERS = List.of(new ZipFileSaver(), new SevenZipFileSaver());
 
     private static final List<String> IMAGE_EXTENSIONS = Stream.of(ImageIO.getReaderFileSuffixes())
             .map(String::toLowerCase).collect(Collectors.toList());
@@ -27,6 +31,14 @@ public final class FileFactory {
                 .orElseThrow(() -> new IOException("Unsupported file format."));
         opener.open(file);
         return opener;
+    }
+
+    public static FileSaver getWriter(File file) throws IOException {
+        var writer = FILE_WRITERS.stream().filter(f -> f.canWrite(file))
+                .findFirst()
+                .orElseThrow(() -> new IOException("Unsupported file format."));
+        writer.open(file);
+        return writer;
     }
 
     public static boolean isValidImage(String fileName) {

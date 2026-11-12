@@ -2,7 +2,7 @@ package com.github.leonhad.document;
 
 import com.github.leonhad.components.StatusBar;
 import com.github.leonhad.fileformat.FileFactory;
-import com.github.leonhad.fileformat.FileOpener;
+import com.github.leonhad.fileformat.save.EntrySaver;
 import lombok.Getter;
 import lombok.extern.java.Log;
 import org.jdom2.Attribute;
@@ -26,35 +26,36 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 @Log
 public class Document {
 
     public static final String FILE_LOADED = "File loaded.";
     public static final String ERROR_LOADING_FILE = "Error loading file.";
+    public static final String COMIC_INFO_XML = "ComicInfo.xml";
 
     private final List<PageMetadata> pagesMetadata = new ArrayList<>();
+
+    private final List<ImageMetadata> imageList;
+
+    private boolean fileLoaded = false;
+
+    private int index;
+
     @Getter
     private final File file;
-    private final FileOpener fileOpener;
 
     @Getter
     private Metadata metadata;
-    private boolean fileLoaded = false;
-
-    @Getter
-    private BufferedImage currentImage;
 
     public Document(File file) throws IOException {
         StatusBar.setStatus("Loading file...");
-        try {
-            this.file = file;
-            this.fileOpener = FileFactory.getOpener(file);
-            this.currentImage = fileOpener.getCurrentImage();
-            StatusBar.setFileStatus(fileOpener.getImageCount() + " images");
+        this.file = file;
+
+        try (var fileOpener = FileFactory.getOpener(file)) {
+            this.imageList = fileOpener.getImageList();
+
+            StatusBar.setFileStatus(imageList.size() + " images");
 
             var info = fileOpener.getComicInfo(inputStream -> {
                 try {
@@ -75,9 +76,10 @@ public class Document {
                 fileLoaded = true;
                 StatusBar.setStatus(FILE_LOADED);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Unexpected error saving file.", e);
             StatusBar.setStatus(ERROR_LOADING_FILE);
-            throw e;
+            throw new IOException(e);
         }
     }
 
@@ -88,10 +90,10 @@ public class Document {
 
     private void processPageMetadata() {
         try {
-            for (int loop = 0; loop < fileOpener.getImageCount(); loop++) {
-                var image = fileOpener.getImageList().get(loop);
-                BufferedImage buffer = fileOpener.readImage(image);
-                pagesMetadata.add(new PageMetadata(loop, image.getSize(), buffer.getWidth(), buffer.getHeight()));
+            for (int loop = 0; loop < imageList.size(); loop++) {
+                var image = imageList.get(loop);
+
+                pagesMetadata.add(new PageMetadata(loop, imageList.size(), image.getWidth(), image.getHeight()));
 
                 if (loop == 0) {
                     StatusBar.setImageStatus(pagesMetadata.get(0).getType().getDescription());
@@ -100,18 +102,19 @@ public class Document {
 
             fileLoaded = true;
             StatusBar.setStatus(FILE_LOADED);
-        } catch (IOException ex) {
+        } catch (Exception e) {
             fileLoaded = false;
             StatusBar.setStatus(ERROR_LOADING_FILE);
+            throw new RuntimeException(e);
         }
     }
 
     public int getWidth() {
-        return currentImage.getWidth();
+        return imageList.get(index).getWidth();
     }
 
     public int getHeight() {
-        return currentImage.getHeight();
+        return imageList.get(index).getHeight();
     }
 
     private void loadMetadata(InputStream inputStream) throws IOException {
@@ -164,7 +167,7 @@ public class Document {
             metadata.setGtin(root.getChildText("GTIN"));
 
             pagesMetadata.clear();
-            var imageList = fileOpener.getImageList();
+
             var pages = root.getChild("Pages");
             if (pages != null) {
                 processMetadata(pages, imageList);
@@ -173,7 +176,7 @@ public class Document {
             if (pagesMetadata.size() != imageList.size()) {
                 rebuildMetadata();
             } else {
-                StatusBar.setImageStatus(pagesMetadata.get(fileOpener.getIndex()).getType().getDescription());
+                StatusBar.setImageStatus(pagesMetadata.get(index).getType().getDescription());
                 fileLoaded = true;
             }
         } catch (ParserConfigurationException | SAXException e) {
@@ -202,8 +205,9 @@ public class Document {
             throw new IOException("File not loaded yet.");
         }
 
+        // FIXME change to File Saver
         try (var fs = FileSystems.newFileSystem(file.toPath(), (ClassLoader) null)) {
-            Path source = fs.getPath("/ComicInfo.xml");
+            Path source = fs.getPath(COMIC_INFO_XML);
 
             try (var out = Files.newOutputStream(source)) {
                 writeXml(out);
@@ -222,28 +226,19 @@ public class Document {
             StatusBar.setStatus("Saving file...");
 
             new Thread(() -> {
-                try (var output = new FileOutputStream(path.toFile());
-                     var bufferOut = new BufferedOutputStream(output);
-                     var zipOut = new ZipOutputStream(bufferOut);
-                     var input = new FileInputStream(file);
-                     var bufferIn = new BufferedInputStream(input);
-                     var zipIn = new ZipInputStream(bufferIn)) {
 
-                    zipOut.setMethod(ZipOutputStream.DEFLATED);
-                    zipOut.setLevel(9);
+                try (var fileSaver = FileFactory.getWriter(path.toFile())) {
+                    var list = new ArrayList<EntrySaver>();
+                    list.add(new EntrySaver(COMIC_INFO_XML, this::writeXml));
 
-                    zipOut.putNextEntry(new ZipEntry("ComicInfo.xml"));
-                    writeXml(zipOut);
-
-                    ZipEntry entry;
-                    while ((entry = zipIn.getNextEntry()) != null) {
-                        if (entry.getName().equals("ComicInfo.xml")) {
-                            continue;
+                    for (var image : imageList) {
+                        try (var is = new ByteArrayInputStream(image.getImage())) {
+                            list.add(new EntrySaver(image.getFileName(), is::transferTo));
                         }
-
-                        zipOut.putNextEntry(new ZipEntry(entry.getName()));
-                        zipIn.transferTo(zipOut);
                     }
+
+                    fileSaver.addEntries(list);
+
                     StatusBar.setStatus("File saved.");
                 } catch (Exception e) {
                     log.log(Level.SEVERE, "Unexpected error saving file.", e);
@@ -338,27 +333,37 @@ public class Document {
 
     private void updateStatus() {
         if (fileLoaded) {
-            StatusBar.setImageStatus(pagesMetadata.get(fileOpener.getIndex()).getType().getDescription());
+            StatusBar.setImageStatus(pagesMetadata.get(index).getType().getDescription());
         }
     }
 
-    public void nextPage() throws IOException {
-        this.currentImage = fileOpener.nextPage();
+    public void nextPage() {
+        index++;
+        if (index >= imageList.size()) {
+            index = imageList.size() - 1;
+        }
+
         updateStatus();
     }
 
-    public void previousPage() throws IOException {
-        this.currentImage = fileOpener.previousPage();
+    public void previousPage() {
+        index--;
+        if (index < 0) {
+            index = 0;
+        }
+
         updateStatus();
     }
 
-    public void firstPage() throws IOException {
-        this.currentImage = fileOpener.firstPage();
+    public void firstPage() {
+        index = 0;
+
         updateStatus();
     }
 
-    public void lastPage() throws IOException {
-        this.currentImage = fileOpener.lastPage();
+    public void lastPage() {
+        index = imageList.size() - 1;
+
         updateStatus();
     }
 
@@ -367,8 +372,11 @@ public class Document {
             throw new IOException("File not loaded yet.");
         }
 
-        pagesMetadata.get(fileOpener.getIndex()).setType(pageType);
-        StatusBar.setImageStatus(Optional.ofNullable(pagesMetadata.get(fileOpener.getIndex()).getType()).map(PageType::getDescription).orElse(""));
+        pagesMetadata.get(index).setType(pageType);
+        StatusBar.setImageStatus(Optional.ofNullable(pagesMetadata.get(index).getType()).map(PageType::getDescription).orElse(""));
     }
 
+    public BufferedImage getCurrentImage() throws IOException {
+        return imageList.get(index).getBuffer();
+    }
 }
