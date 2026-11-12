@@ -258,7 +258,7 @@ public class MainForm extends JFrame {
 
     private void showImage() {
         imageComponent.setImage(document.getCurrentImage());
-        int height = this.getHeight();
+        int height = imageComponent.getHeight();
         float proportion = document.getHeight() / (float) height;
 
         imageComponent.setPreferredSize(new Dimension((int) (document.getWidth() / proportion), height));
