@@ -23,7 +23,7 @@ public class TarFileSaver extends FileSaver {
     public void save(File file, List<EntrySaver> entries) throws IOException {
         try (var fos = new FileOutputStream(file);
              var bos = new BufferedOutputStream(fos);
-             TarArchiveOutputStream taos = new TarArchiveOutputStream(bos)) {
+             var taos = new TarArchiveOutputStream(bos)) {
 
             for (var entry : entries) {
                 try (var out = new ByteArrayOutputStream()) {
@@ -31,7 +31,6 @@ public class TarFileSaver extends FileSaver {
                     var bytes = out.toByteArray();
 
                     var tar = new TarArchiveEntry(entry.getName());
-                    tar.setName(entry.getName());
                     tar.setSize(bytes.length);
 
                     taos.putArchiveEntry(tar);
