@@ -24,7 +24,7 @@ public class ZipFileSaver extends FileSaver {
         try (var output = new FileOutputStream(file);
              var buffer = new BufferedOutputStream(output);
              var zipFile = new ZipOutputStream(buffer)) {
-            zipFile.setMethod(ZipOutputStream.DEFLATED);
+
             zipFile.setLevel(9);
             zipFile.setMethod(ZipOutputStream.DEFLATED);
 

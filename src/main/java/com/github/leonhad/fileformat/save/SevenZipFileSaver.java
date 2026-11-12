@@ -8,9 +8,9 @@ import net.sf.sevenzipjbinding.IOutCreateCallback;
 import net.sf.sevenzipjbinding.IOutItem7z;
 import net.sf.sevenzipjbinding.ISequentialInStream;
 import net.sf.sevenzipjbinding.SevenZip;
+import net.sf.sevenzipjbinding.impl.InputStreamSequentialInStream;
 import net.sf.sevenzipjbinding.impl.OutItemFactory;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream;
-import net.sf.sevenzipjbinding.util.ByteArrayStream;
 
 import java.io.*;
 import java.util.HashMap;
@@ -76,9 +76,7 @@ public class SevenZipFileSaver extends FileSaver {
         }
 
         public ISequentialInStream getStream(int i) {
-            var out = new ByteArrayStream(files.get(i), true);
-            files.remove(i);
-            return out;
+            return new InputStreamSequentialInStream(new ByteArrayInputStream(files.get(i)));
         }
     }
 }
