@@ -4,9 +4,11 @@ import com.github.leonhad.filefilters.Cb7Filter;
 import com.github.leonhad.filefilters.SevenZipFilter;
 import com.github.leonhad.fileformat.FileSaver;
 import lombok.RequiredArgsConstructor;
-import net.sf.sevenzipjbinding.*;
+import net.sf.sevenzipjbinding.IOutCreateCallback;
+import net.sf.sevenzipjbinding.IOutItem7z;
+import net.sf.sevenzipjbinding.ISequentialInStream;
+import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.impl.OutItemFactory;
-import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream;
 import net.sf.sevenzipjbinding.util.ByteArrayStream;
 
@@ -15,10 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 
 public class SevenZipFileSaver extends FileSaver {
-
-    private RandomAccessFile randomFile;
-
-    private IOutCreateArchive7z outArchive;
 
     @Override
     protected FileFilter[] getFilters() {
@@ -29,32 +27,16 @@ public class SevenZipFileSaver extends FileSaver {
     }
 
     @Override
-    public void open(File file) throws IOException {
-        if (file.exists()) {
-            this.randomFile = new RandomAccessFile(file, "rw");
-            var stream = new RandomAccessFileInStream(randomFile);
-
-            var a = SevenZip.openInArchive(ArchiveFormat.SEVEN_ZIP, stream);
-            IOutUpdateArchive<IOutItemAllFormats> out = a.getConnectedOutArchive();
-            //out.updateItems();
-        } else {
-            this.randomFile = new RandomAccessFile(file, "rw");
-            this.outArchive = SevenZip.openOutArchive7z();
+    public void save(File file, List<EntrySaver> entries) throws IOException {
+        try (var randomFile = new RandomAccessFile(file, "rw");
+             var out = new RandomAccessFileOutStream(randomFile);
+             var outArchive = SevenZip.openOutArchive7z()) {
 
             // Configure archive
-            this.outArchive.setLevel(5);
+            outArchive.setLevel(9);
+
+            outArchive.createArchive(out, entries.size(), new WriteCallback(entries));
         }
-    }
-
-    @Override
-    public void addEntries(List<EntrySaver> entries) throws IOException {
-        outArchive.createArchive(new RandomAccessFileOutStream(this.randomFile), entries.size(), new WriteCallback(entries));
-    }
-
-    @Override
-    public void close() throws Exception {
-        this.outArchive.close();
-        this.randomFile.close();
     }
 
     @RequiredArgsConstructor

@@ -34,11 +34,9 @@ public final class FileFactory {
     }
 
     public static FileSaver getWriter(File file) throws IOException {
-        var writer = FILE_WRITERS.stream().filter(f -> f.canWrite(file))
+        return FILE_WRITERS.stream().filter(f -> f.canWrite(file))
                 .findFirst()
                 .orElseThrow(() -> new IOException("Unsupported file format."));
-        writer.open(file);
-        return writer;
     }
 
     public static boolean isValidImage(String fileName) {

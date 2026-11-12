@@ -11,10 +11,6 @@ import java.util.zip.ZipOutputStream;
 
 public class ZipFileSaver extends FileSaver {
 
-    private FileOutputStream output;
-    private BufferedOutputStream buffer;
-    private ZipOutputStream file;
-
     @Override
     protected FileFilter[] getFilters() {
         return new FileFilter[]{
@@ -24,31 +20,19 @@ public class ZipFileSaver extends FileSaver {
     }
 
     @Override
-    public void open(File file) throws IOException {
-        this.output = new FileOutputStream(file);
-        this.buffer = new BufferedOutputStream(output);
-        this.file = new ZipOutputStream(buffer);
+    public void save(File file, List<EntrySaver> entries) throws IOException {
+        try (var output = new FileOutputStream(file);
+             var buffer = new BufferedOutputStream(output);
+             var zipFile = new ZipOutputStream(buffer)) {
+            zipFile.setMethod(ZipOutputStream.DEFLATED);
+            zipFile.setLevel(9);
+            zipFile.setMethod(ZipOutputStream.DEFLATED);
 
-        this.file.setMethod(ZipOutputStream.DEFLATED);
-        this.file.setLevel(9);
-    }
-
-    @Override
-    public void addEntries(List<EntrySaver> entries) throws IOException {
-        for (var entry : entries) {
-            try {
-                this.file.putNextEntry(new ZipEntry(entry.getName()));
-                entry.getConsumer().accept(this.file);
-            } finally {
-                this.file.closeEntry();
+            for (var entry : entries) {
+                zipFile.putNextEntry(new ZipEntry(entry.getName()));
+                entry.getConsumer().accept(zipFile);
+                zipFile.closeEntry();
             }
         }
-    }
-
-    @Override
-    public void close() throws Exception {
-        this.file.close();
-        this.buffer.close();
-        this.output.close();
     }
 }

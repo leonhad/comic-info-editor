@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class FileSaver implements AutoCloseable {
+public abstract class FileSaver {
 
     protected abstract FileFilter[] getFilters();
 
@@ -17,8 +17,6 @@ public abstract class FileSaver implements AutoCloseable {
         return Arrays.stream(filters).anyMatch(f -> f.accept(file));
     }
 
-    public abstract void open(File file) throws IOException;
-
-    public abstract void addEntries(List<EntrySaver> entries) throws IOException;
+    public abstract void save(File file, List<EntrySaver> entries) throws IOException;
 
 }

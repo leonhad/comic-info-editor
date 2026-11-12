@@ -257,56 +257,36 @@ public class MainForm extends JFrame {
     }
 
     private void showImage() {
-        try {
-            imageComponent.setImage(document.getCurrentImage());
-            int height = this.getHeight();
-            float proportion = document.getHeight() / (float) height;
+        imageComponent.setImage(document.getCurrentImage());
+        int height = this.getHeight();
+        float proportion = document.getHeight() / (float) height;
 
-            imageComponent.setPreferredSize(new Dimension((int) (document.getWidth() / proportion), height));
-            this.pack();
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
-        }
+        imageComponent.setPreferredSize(new Dimension((int) (document.getWidth() / proportion), height));
+        this.pack();
     }
 
     private void nextPage() {
-        try {
-            document.nextPage();
-            imageComponent.setImage(document.getCurrentImage());
-            this.getContentPane().repaint();
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
-        }
+        document.nextPage();
+        imageComponent.setImage(document.getCurrentImage());
+        this.getContentPane().repaint();
     }
 
     private void previousPage() {
-        try {
-            document.previousPage();
-            imageComponent.setImage(document.getCurrentImage());
-            this.getContentPane().repaint();
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
-        }
+        document.previousPage();
+        imageComponent.setImage(document.getCurrentImage());
+        this.getContentPane().repaint();
     }
 
     private void firstPage() {
-        try {
-            document.firstPage();
-            imageComponent.setImage(document.getCurrentImage());
-            this.getContentPane().repaint();
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
-        }
+        document.firstPage();
+        imageComponent.setImage(document.getCurrentImage());
+        this.getContentPane().repaint();
     }
 
     private void lastPage() {
-        try {
-            document.lastPage();
-            imageComponent.setImage(document.getCurrentImage());
-            this.getContentPane().repaint();
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
-        }
+        document.lastPage();
+        imageComponent.setImage(document.getCurrentImage());
+        this.getContentPane().repaint();
     }
 
     private void save() {

@@ -4,7 +4,6 @@ import com.github.leonhad.document.ImageMetadata;
 import com.github.leonhad.filefilters.*;
 import com.github.leonhad.fileformat.FileFactory;
 import com.github.leonhad.fileformat.FileOpener;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import net.sf.sevenzipjbinding.*;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;

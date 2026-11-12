@@ -19,8 +19,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +31,7 @@ public class Document {
     public static final String FILE_LOADED = "File loaded.";
     public static final String ERROR_LOADING_FILE = "Error loading file.";
     public static final String COMIC_INFO_XML = "ComicInfo.xml";
+    public static final String UNEXPECTED_ERROR_SAVING_FILE = "Unexpected error while saving file.";
 
     private final List<PageMetadata> pagesMetadata = new ArrayList<>();
 
@@ -77,7 +76,7 @@ public class Document {
                 StatusBar.setStatus(FILE_LOADED);
             }
         } catch (Exception e) {
-            log.log(Level.SEVERE, "Unexpected error saving file.", e);
+            log.log(Level.SEVERE, UNEXPECTED_ERROR_SAVING_FILE, e);
             StatusBar.setStatus(ERROR_LOADING_FILE);
             throw new IOException(e);
         }
@@ -205,16 +204,7 @@ public class Document {
             throw new IOException("File not loaded yet.");
         }
 
-        // FIXME change to File Saver
-        try (var fs = FileSystems.newFileSystem(file.toPath(), (ClassLoader) null)) {
-            Path source = fs.getPath(COMIC_INFO_XML);
-
-            try (var out = Files.newOutputStream(source)) {
-                writeXml(out);
-            }
-        }
-
-        StatusBar.setStatus("File saved.");
+        saveAs(file.toPath());
     }
 
     public void saveAs(Path path) throws IOException {
@@ -222,33 +212,29 @@ public class Document {
             throw new IOException("File not loaded yet.");
         }
 
-        if (!path.toFile().equals(file)) {
             StatusBar.setStatus("Saving file...");
 
             new Thread(() -> {
-
-                try (var fileSaver = FileFactory.getWriter(path.toFile())) {
-                    var list = new ArrayList<EntrySaver>();
-                    list.add(new EntrySaver(COMIC_INFO_XML, this::writeXml));
+                try {
+                    var fileSaver = FileFactory.getWriter(path.toFile());
+                    var entries = new ArrayList<EntrySaver>();
+                    entries.add(new EntrySaver(COMIC_INFO_XML, this::writeXml));
 
                     for (var image : imageList) {
                         try (var is = new ByteArrayInputStream(image.getImage())) {
-                            list.add(new EntrySaver(image.getFileName(), is::transferTo));
+                            entries.add(new EntrySaver(image.getFileName(), is::transferTo));
                         }
                     }
 
-                    fileSaver.addEntries(list);
+                    fileSaver.save(path.toFile(), entries);
 
                     StatusBar.setStatus("File saved.");
                 } catch (Exception e) {
-                    log.log(Level.SEVERE, "Unexpected error saving file.", e);
-                    StatusBar.setStatus("Unexpected error saving file.");
+                    log.log(Level.SEVERE, UNEXPECTED_ERROR_SAVING_FILE, e);
+                    StatusBar.setStatus(UNEXPECTED_ERROR_SAVING_FILE);
                 }
 
             }).start();
-        } else {
-            save();
-        }
     }
 
     private void writeXml(OutputStream out) throws IOException {
@@ -376,7 +362,7 @@ public class Document {
         StatusBar.setImageStatus(Optional.ofNullable(pagesMetadata.get(index).getType()).map(PageType::getDescription).orElse(""));
     }
 
-    public BufferedImage getCurrentImage() throws IOException {
+    public BufferedImage getCurrentImage() {
         return imageList.get(index).getBuffer();
     }
 }
