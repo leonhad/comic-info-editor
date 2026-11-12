@@ -218,7 +218,7 @@ public class MainForm extends JFrame {
         var openDialog = new JFileChooser();
         openDialog.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-        var allSupportedFilter = new AllSupportedFilter();
+        var allSupportedFilter = new AllOpenSupportedFilter();
         openDialog.addChoosableFileFilter(allSupportedFilter);
         openDialog.addChoosableFileFilter(new SevenZipFilter());
         openDialog.addChoosableFileFilter(new Cb7Filter());
@@ -300,7 +300,7 @@ public class MainForm extends JFrame {
     private void saveAs() {
         var saveDialog = new JFileChooser("Save As...");
 
-        var allSupportedFilter = new AllSupportedFilter();
+        var allSupportedFilter = new AllSaveSupportedFilter();
         saveDialog.addChoosableFileFilter(allSupportedFilter);
         saveDialog.addChoosableFileFilter(new SevenZipFilter());
         saveDialog.addChoosableFileFilter(new Cb7Filter());

@@ -6,6 +6,7 @@ import com.github.leonhad.fileformat.FileSaver;
 
 import java.io.*;
 import java.util.List;
+import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -25,7 +26,7 @@ public class ZipFileSaver extends FileSaver {
              var buffer = new BufferedOutputStream(output);
              var zipFile = new ZipOutputStream(buffer)) {
 
-            zipFile.setLevel(9);
+            zipFile.setLevel(Deflater.DEFAULT_COMPRESSION);
             zipFile.setMethod(ZipOutputStream.DEFLATED);
 
             for (var entry : entries) {

@@ -3,7 +3,7 @@ package com.github.leonhad.filefilters;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
 
-public class AllSupportedFilter extends FileFilter {
+public class AllOpenSupportedFilter extends FileFilter {
 
     @Override
     public String getDescription() {

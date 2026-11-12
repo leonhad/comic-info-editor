@@ -212,29 +212,30 @@ public class Document {
             throw new IOException("File not loaded yet.");
         }
 
-            StatusBar.setStatus("Saving file...");
+        StatusBar.setStatus("Saving file...");
 
-            new Thread(() -> {
-                try {
-                    var fileSaver = FileFactory.getWriter(path.toFile());
-                    var entries = new ArrayList<EntrySaver>();
-                    entries.add(new EntrySaver(COMIC_INFO_XML, this::writeXml));
+        var fileSaver = FileFactory.getWriter(path.toFile());
 
-                    for (var image : imageList) {
-                        try (var is = new ByteArrayInputStream(image.getImage())) {
-                            entries.add(new EntrySaver(image.getFileName(), is::transferTo));
-                        }
-                    }
+        var entries = new ArrayList<EntrySaver>();
+        entries.add(new EntrySaver(COMIC_INFO_XML, this::writeXml));
 
-                    fileSaver.save(path.toFile(), entries);
+        for (var image : imageList) {
+            try (var is = new ByteArrayInputStream(image.getImage())) {
+                entries.add(new EntrySaver(image.getFileName(), is::transferTo));
+            }
+        }
 
-                    StatusBar.setStatus("File saved.");
-                } catch (Exception e) {
-                    log.log(Level.SEVERE, UNEXPECTED_ERROR_SAVING_FILE, e);
-                    StatusBar.setStatus(UNEXPECTED_ERROR_SAVING_FILE);
-                }
+        new Thread(() -> {
+            try {
+                fileSaver.save(path.toFile(), entries);
 
-            }).start();
+                StatusBar.setStatus("File saved.");
+            } catch (Exception e) {
+                log.log(Level.SEVERE, UNEXPECTED_ERROR_SAVING_FILE, e);
+                StatusBar.setStatus(UNEXPECTED_ERROR_SAVING_FILE);
+            }
+
+        }).start();
     }
 
     private void writeXml(OutputStream out) throws IOException {

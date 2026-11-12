@@ -33,7 +33,7 @@ public class SevenZipFileSaver extends FileSaver {
              var outArchive = SevenZip.openOutArchive7z()) {
 
             // Configure archive
-            outArchive.setLevel(9);
+            outArchive.setLevel(5);
 
             outArchive.createArchive(out, entries.size(), new WriteCallback(entries));
         }
