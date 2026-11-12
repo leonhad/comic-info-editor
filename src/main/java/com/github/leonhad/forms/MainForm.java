@@ -290,10 +290,16 @@ public class MainForm extends JFrame {
     }
 
     private void save() {
+        saveMenu.setEnabled(false);
+        saveAsMenu.setEnabled(false);
+
         try {
-            document.save();
+            document.save().join();
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
+        } finally {
+            saveMenu.setEnabled(true);
+            saveAsMenu.setEnabled(true);
         }
     }
 
@@ -320,13 +326,20 @@ public class MainForm extends JFrame {
                 if (selectedFile.exists()) {
                     var confirm = JOptionPane.showConfirmDialog(this, "The file " + selectedFile.getName() + " already exists\nConfirm override?", "Confirm Save As...", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
-                        document.saveAs(selectedFile.toPath());
+                        saveMenu.setEnabled(false);
+                        saveAsMenu.setEnabled(false);
+                        document.saveAs(selectedFile.toPath()).join();
                     }
                 } else {
-                    document.saveAs(selectedFile.toPath());
+                    saveMenu.setEnabled(false);
+                    saveAsMenu.setEnabled(false);
+                    document.saveAs(selectedFile.toPath()).join();
                 }
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), getTitle(), JOptionPane.ERROR_MESSAGE);
+            } finally {
+                saveMenu.setEnabled(true);
+                saveAsMenu.setEnabled(true);
             }
         }
     }

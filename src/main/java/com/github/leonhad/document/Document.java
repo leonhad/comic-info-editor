@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
 @Log
@@ -199,15 +200,15 @@ public class Document {
         }
     }
 
-    public void save() throws IOException {
+    public CompletableFuture<Void> save() throws IOException {
         if (!fileLoaded) {
             throw new IOException("File not loaded yet.");
         }
 
-        saveAs(file.toPath());
+        return saveAs(file.toPath());
     }
 
-    public void saveAs(Path path) throws IOException {
+    public CompletableFuture<Void> saveAs(Path path) throws IOException {
         if (!fileLoaded) {
             throw new IOException("File not loaded yet.");
         }
@@ -225,7 +226,7 @@ public class Document {
             }
         }
 
-        new Thread(() -> {
+        return CompletableFuture.runAsync(() -> {
             try {
                 fileSaver.save(path.toFile(), entries);
 
@@ -234,8 +235,7 @@ public class Document {
                 log.log(Level.SEVERE, UNEXPECTED_ERROR_SAVING_FILE, e);
                 StatusBar.setStatus(UNEXPECTED_ERROR_SAVING_FILE);
             }
-
-        }).start();
+        });
     }
 
     private void writeXml(OutputStream out) throws IOException {
