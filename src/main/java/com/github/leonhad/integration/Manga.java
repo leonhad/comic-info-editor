@@ -3,12 +3,13 @@ package com.github.leonhad.integration;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.net.URL;
 import java.util.List;
 
 @Getter
 @Setter
-public class Manga {
+public class Manga implements Serializable {
 
     private Integer id;
     private String title;

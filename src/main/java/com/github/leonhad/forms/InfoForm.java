@@ -2,6 +2,8 @@ package com.github.leonhad.forms;
 
 import com.github.leonhad.components.RatingComponent;
 import com.github.leonhad.document.Metadata;
+import com.github.leonhad.integration.Link;
+import com.github.leonhad.integration.Staff;
 import com.github.leonhad.utils.CodeValue;
 import com.github.leonhad.utils.ISOLanguage;
 import net.miginfocom.swing.MigLayout;
@@ -12,17 +14,21 @@ import javax.swing.undo.UndoManager;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class InfoForm extends JDialog {
 
     public static final String UNKNOWN = "Unknown";
+
     public static final String GROW_WRAP = "grow, wrap";
+
     public static final String SPAN_GROW_WRAP = "span, grow, wrap";
+
     private final transient Metadata metadata;
 
     private final JTextField titleField = new JTextField();
@@ -209,6 +215,11 @@ public class InfoForm extends JDialog {
         var panel = new JPanel();
         panel.setLayout(new FlowLayout());
 
+        var search = new JButton("Search");
+        search.addActionListener(e -> search());
+        search.setMnemonic('s');
+        panel.add(search);
+
         var confirm = new JButton("Confirm");
         confirm.addActionListener(e -> confirm());
         confirm.setMnemonic('f');
@@ -373,6 +384,50 @@ public class InfoForm extends JDialog {
             if (component instanceof Container) {
                 addKeyListener(((Container) component).getComponents());
             }
+        }
+    }
+
+    private void search() {
+        var searchForm = new SearchForm((Frame) getParent());
+        var m = searchForm.getSelectedItem();
+        if (m != null) {
+            this.titleField.setText(m.getTitle());
+            this.summary.setText(m.getDescription());
+            this.volume.setText(Optional.ofNullable(m.getVolumes())
+                    .map(Objects::toString)
+                    .orElseGet(() -> Optional.ofNullable(m.getChapters()).map(Objects::toString).orElse("")));
+            this.genre.setText(String.join(", ", Optional.ofNullable(m.getGenres()).orElseGet(List::of)));
+            this.tags.setText(String.join(", ", Optional.ofNullable(m.getTags()).orElseGet(List::of)));
+            this.format.setText(m.getFormat());
+
+            if ("MANGA".equalsIgnoreCase(m.getFormat())) {
+                this.manga.setSelectedIndex(2);
+            } else {
+                this.manga.setSelectedIndex(1);
+            }
+
+            this.day.setText(Optional.ofNullable(m.getStartDay()).map(Objects::toString).orElse(""));
+            this.month.setText(Optional.ofNullable(m.getStartMonth()).map(Objects::toString).orElse(""));
+            this.year.setText(Optional.ofNullable(m.getStartYear()).map(Objects::toString).orElse(""));
+
+            this.characters.setText(String.join(", ", Optional.ofNullable(m.getCharacters()).orElseGet(List::of)));
+            this.teams.setText(Optional.ofNullable(m.getStaff()).orElseGet(List::of).stream()
+                    .map(Staff::getName).collect(Collectors.joining(", ")));
+
+            if (m.getAverageScore() != null) {
+                // Original: [0.0, 100.0]. Convert to [0, 5].
+                this.communityRating.setText(String.valueOf((int)(m.getAverageScore() / 20)));
+            }
+
+            var links = new ArrayList<String>();
+            Optional.ofNullable(m.getSiteUrl()).map(Objects::toString).ifPresent(links::add);
+            Optional.ofNullable(m.getExternalLinks()).orElseGet(List::of).stream()
+                    .map(Link::getUrl)
+                    .map(Objects::toString)
+                    .map(Objects::toString)
+                    .forEach(links::add);
+
+            this.web.setText(links.stream().distinct().collect(Collectors.joining(", ")));
         }
     }
 }

@@ -4,6 +4,7 @@ import com.github.leonhad.components.MangaCellRenderer;
 import com.github.leonhad.integration.ImageCache;
 import com.github.leonhad.integration.Manga;
 import com.github.leonhad.integration.anilist.AniList;
+import lombok.Getter;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
@@ -17,11 +18,16 @@ public class SearchForm extends JDialog {
 
     private final JTextField searchField = new JTextField("");
     private final JButton searchButton = new JButton("Search");
+    private final JButton selectButton = new JButton("Select");
     private final JList<Manga> result = new JList<>();
 
+    @Getter
+    private Manga selectedItem;
+
     public SearchForm(Frame parent) {
-        super(parent);
+        super(parent, true);
         setResizable(false);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         setTitle("Search for manga");
 
@@ -36,25 +42,58 @@ public class SearchForm extends JDialog {
 
         setContentPane(panel);
 
+        selectedItem = null;
+
+        searchField.requestFocusInWindow();
         searchField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     search();
+                } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    dispose();
+                } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                    if(result.getModel().getSize() > 0) {
+                        result.requestFocus();
+                        result.setSelectedIndex(0);
+                    }
                 }
             }
         });
 
-        searchField.requestFocusInWindow();
-
         searchButton.addActionListener(e -> search());
+        selectButton.setMnemonic('s');
+
+        selectButton.setEnabled(false);
+        selectButton.setMnemonic('t');
+        selectButton.addActionListener(e -> select());
+
+        result.addListSelectionListener(e -> selectButton.setEnabled(!result.isSelectionEmpty()));
+        result.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER && searchButton.isEnabled()) {
+                    select();
+                }
+            }
+        });
+
+        result.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    dispose();
+                }
+            }
+        });
 
         setMinimumSize(new Dimension(600, 1));
 
-        setVisible(true);
         pack();
 
         setLocationRelativeTo(parent);
+
+        setVisible(true);
     }
 
     private JPanel createFieldPanel() {
@@ -70,7 +109,15 @@ public class SearchForm extends JDialog {
         panel.add(searchButton, "wrap");
         panel.add(scroll, "span, grow");
 
+        panel.add(new JPanel());
+        panel.add(selectButton, "align trailing");
+
         return panel;
+    }
+
+    private void select() {
+        this.selectedItem = result.getSelectedValue();
+        this.setVisible(false);
     }
 
     private void search() {
@@ -93,6 +140,8 @@ public class SearchForm extends JDialog {
             ret.forEach(model::addElement);
 
             result.setModel(model);
+            result.clearSelection();
+            selectButton.setEnabled(false);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Search failed: " + ex.getMessage(), "Search", JOptionPane.ERROR_MESSAGE);
         } finally {

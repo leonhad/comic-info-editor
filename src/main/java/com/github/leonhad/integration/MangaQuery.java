@@ -13,8 +13,8 @@ public abstract class MangaQuery {
 
     public abstract List<Manga> search(String query) throws SearchException;
 
-    protected Double getDouble(Map<String, Object> map, String key) {
-        return Optional.ofNullable((Number) map.get(key)).map(Number::doubleValue).orElse(null);
+    protected Double getDouble(Map<String, Object> map) {
+        return Optional.ofNullable((Number) map.get("averageScore")).map(Number::doubleValue).orElse(null);
     }
 
     protected Integer getInteger(Map<String, Object> map, String key) {

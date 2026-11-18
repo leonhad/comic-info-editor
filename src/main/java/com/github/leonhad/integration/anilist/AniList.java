@@ -107,7 +107,7 @@ public class AniList extends MangaQuery {
         manga.setTags(parseTags((List<Map<String, Object>>) media.get("tags")));
         manga.setFormat(getString(media, "format"));
         parseStartDate(manga, (Map<String, Object>) media.get("startDate"));
-        manga.setAverageScore(getDouble(media, "averageScore"));
+        manga.setAverageScore(getDouble(media));
         manga.setCharacters(parseCharacters((Map<String, Object>) media.get("characters")));
         manga.setStaff(parseStaff((Map<String, Object>) media.get("staff")));
         manga.setSiteUrl(getURL(media, "siteUrl"));
