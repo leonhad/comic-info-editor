@@ -408,18 +408,46 @@ public class InfoForm extends JDialog {
             } else {
                 this.manga.setSelectedIndex(1);
             }
+            var staff = Optional.ofNullable(m.getStaff()).orElseGet(List::of);
+
+            var writingList = List.of("Story", "Original Creator", "Concept",
+                    "Series Composition", "Script", "Storyboard", "Leica Reel");
+
+            this.writer.setText(staff.stream()
+                    .filter(s -> writingList.stream().anyMatch(l -> s.getRole().contains(l)))
+                    .map(Staff::getName)
+                    .collect(Collectors.joining(", ")));
+
+            this.colorist.setText(staff.stream()
+                    .filter(s -> s.getRole().contains("Color"))
+                    .map(Staff::getName)
+                    .collect(Collectors.joining(", ")));
+
+            this.editor.setText(staff.stream()
+                    .filter(s -> s.getRole().contains("Editor"))
+                    .map(Staff::getName)
+                    .collect(Collectors.joining(", ")));
+
+            this.letterer.setText(staff.stream()
+                    .filter(s -> s.getRole().contains("Lettering"))
+                    .map(Staff::getName)
+                    .collect(Collectors.joining(", ")));
+
+            this.translator.setText(staff.stream()
+                    .filter(s -> s.getRole().contains("Translator"))
+                    .map(Staff::getName)
+                    .collect(Collectors.joining(", ")));
 
             this.day.setText(Optional.ofNullable(m.getStartDay()).map(Objects::toString).orElse(""));
             this.month.setText(Optional.ofNullable(m.getStartMonth()).map(Objects::toString).orElse(""));
             this.year.setText(Optional.ofNullable(m.getStartYear()).map(Objects::toString).orElse(""));
 
             this.characters.setText(String.join(", ", Optional.ofNullable(m.getCharacters()).orElseGet(List::of)));
-            this.teams.setText(Optional.ofNullable(m.getStaff()).orElseGet(List::of).stream()
-                    .map(Staff::getName).collect(Collectors.joining(", ")));
+
 
             if (m.getAverageScore() != null) {
                 // Original: [0.0, 100.0]. Convert to [0, 5].
-                this.communityRating.setText(String.valueOf((int)(m.getAverageScore() / 20)));
+                this.communityRating.setText(String.valueOf((int) (m.getAverageScore() / 20)));
             }
 
             var links = new ArrayList<String>();
@@ -430,7 +458,7 @@ public class InfoForm extends JDialog {
                     .map(Objects::toString)
                     .forEach(links::add);
 
-            this.web.setText(links.stream().distinct().collect(Collectors.joining(", ")));
+            this.web.setText(links.stream().distinct().collect(Collectors.joining(",")));
         }
     }
 }
