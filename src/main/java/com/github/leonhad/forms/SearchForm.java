@@ -13,6 +13,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.concurrent.ExecutionException;
 
 public class SearchForm extends JDialog {
 
@@ -138,27 +139,35 @@ public class SearchForm extends JDialog {
         searchButton.setText("Searching...");
         progressBar.setVisible(true);
         searchButton.setEnabled(false);
-        SwingUtilities.invokeLater(this::internalSearch);
-    }
 
-    private void internalSearch() {
-        try {
-            var anilist = new AniList();
+        new SwingWorker<DefaultListModel<Manga>, Void>() {
 
-            var model = new DefaultListModel<Manga>();
+            @Override
+            protected DefaultListModel<Manga> doInBackground() throws Exception {
+                var anilist = new AniList();
+                var ret = anilist.search(searchField.getText());
+                var model = new DefaultListModel<Manga>();
+                ret.forEach(model::addElement);
+                return model;
+            }
 
-            var ret = anilist.search(searchField.getText());
-            ret.forEach(model::addElement);
-
-            result.setModel(model);
-            result.clearSelection();
-            selectButton.setEnabled(false);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Search failed: " + ex.getMessage(), SEARCH_TEXT, JOptionPane.ERROR_MESSAGE);
-        } finally {
-            searchButton.setText(SEARCH_TEXT);
-            progressBar.setVisible(false);
-            searchButton.setEnabled(true);
-        }
+            @Override
+            protected void done() {
+                try {
+                    result.setModel(get());
+                    result.clearSelection();
+                    selectButton.setEnabled(false);
+                } catch (InterruptedException | ExecutionException ex) {
+                    Thread.currentThread().interrupt();
+                    JOptionPane.showMessageDialog(SearchForm.this, "Search failed: " + ex.getMessage(), SEARCH_TEXT, JOptionPane.ERROR_MESSAGE);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(SearchForm.this, "Search failed: " + ex.getMessage(), SEARCH_TEXT, JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    searchButton.setText(SEARCH_TEXT);
+                    progressBar.setVisible(false);
+                    searchButton.setEnabled(true);
+                }
+            }
+        }.execute();
     }
 }
