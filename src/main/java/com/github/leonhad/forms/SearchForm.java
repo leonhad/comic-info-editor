@@ -52,11 +52,9 @@ public class SearchForm extends JDialog {
                     search();
                 } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     dispose();
-                } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-                    if(result.getModel().getSize() > 0) {
-                        result.requestFocus();
-                        result.setSelectedIndex(0);
-                    }
+                } else if (e.getKeyCode() == KeyEvent.VK_DOWN && result.getModel().getSize() > 0) {
+                    result.requestFocus();
+                    result.setSelectedIndex(0);
                 }
             }
         });

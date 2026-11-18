@@ -392,7 +392,10 @@ public class InfoForm extends JDialog {
         var m = searchForm.getSelectedItem();
         if (m != null) {
             this.titleField.setText(m.getTitle());
-            this.summary.setText(m.getDescription());
+            this.summary.setText(Optional.ofNullable(m.getDescription())
+                    .map(d -> d.replaceAll("<br\\s*/?>", "\n"))
+                    .map(d -> d.replaceAll("<[^>]*>", ""))
+                    .orElse(""));
             this.volume.setText(Optional.ofNullable(m.getVolumes())
                     .map(Objects::toString)
                     .orElseGet(() -> Optional.ofNullable(m.getChapters()).map(Objects::toString).orElse("")));
