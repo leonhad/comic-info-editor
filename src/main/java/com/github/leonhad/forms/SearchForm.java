@@ -16,13 +16,20 @@ import java.awt.event.WindowEvent;
 
 public class SearchForm extends JDialog {
 
+    public static final String SEARCH_TEXT = "Search";
+
     private final JTextField searchField = new JTextField("");
-    private final JButton searchButton = new JButton("Search");
+    private final JButton searchButton = new JButton(SEARCH_TEXT);
     private final JButton selectButton = new JButton("Select");
     private final JList<Manga> result = new JList<>();
+    private final JProgressBar progressBar = new JProgressBar();
 
     @Getter
     private Manga selectedItem;
+
+    public static void main(String[] args) {
+        new SearchForm(null);
+    }
 
     public SearchForm(Frame parent) {
         super(parent, true);
@@ -43,6 +50,9 @@ public class SearchForm extends JDialog {
         setContentPane(panel);
 
         selectedItem = null;
+
+        progressBar.setIndeterminate(true);
+        progressBar.setVisible(false);
 
         searchField.requestFocusInWindow();
         searchField.addKeyListener(new KeyAdapter() {
@@ -106,6 +116,7 @@ public class SearchForm extends JDialog {
         panel.add(searchField, "grow");
         panel.add(searchButton, "wrap");
         panel.add(scroll, "span, grow");
+        panel.add(progressBar, "span, grow");
 
         panel.add(new JPanel());
         panel.add(selectButton, "align trailing");
@@ -124,6 +135,8 @@ public class SearchForm extends JDialog {
             return;
         }
 
+        searchButton.setText("Searching...");
+        progressBar.setVisible(true);
         searchButton.setEnabled(false);
         SwingUtilities.invokeLater(this::internalSearch);
     }
@@ -141,8 +154,10 @@ public class SearchForm extends JDialog {
             result.clearSelection();
             selectButton.setEnabled(false);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Search failed: " + ex.getMessage(), "Search", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Search failed: " + ex.getMessage(), SEARCH_TEXT, JOptionPane.ERROR_MESSAGE);
         } finally {
+            searchButton.setText(SEARCH_TEXT);
+            progressBar.setVisible(false);
             searchButton.setEnabled(true);
         }
     }

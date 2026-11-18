@@ -23,6 +23,11 @@ import java.util.stream.Collectors;
 
 public class InfoForm extends JDialog {
 
+    private static final List<String> WRITING_LIST = List.of(
+            "Story", "Original Creator", "Concept",
+            "Series Composition", "Script", "Storyboard", "Leica Reel"
+    );
+
     public static final String UNKNOWN = "Unknown";
 
     public static final String GROW_WRAP = "grow, wrap";
@@ -410,11 +415,8 @@ public class InfoForm extends JDialog {
             }
             var staff = Optional.ofNullable(m.getStaff()).orElseGet(List::of);
 
-            var writingList = List.of("Story", "Original Creator", "Concept",
-                    "Series Composition", "Script", "Storyboard", "Leica Reel");
-
             this.writer.setText(staff.stream()
-                    .filter(s -> writingList.stream().anyMatch(l -> s.getRole().contains(l)))
+                    .filter(s -> WRITING_LIST.stream().anyMatch(l -> s.getRole().contains(l)))
                     .map(Staff::getName)
                     .collect(Collectors.joining(", ")));
 
