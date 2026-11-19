@@ -28,10 +28,6 @@ public class SearchForm extends JDialog {
     @Getter
     private Manga selectedItem;
 
-    public static void main(String[] args) {
-        new SearchForm(null);
-    }
-
     public SearchForm(Frame parent) {
         super(parent, true);
         setResizable(false);
