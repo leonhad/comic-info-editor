@@ -224,6 +224,8 @@ public class MainForm extends JFrame {
         openDialog.addChoosableFileFilter(new Cb7Filter());
         openDialog.addChoosableFileFilter(new CbtFilter());
         openDialog.addChoosableFileFilter(new CbzFilter());
+        openDialog.addChoosableFileFilter(new CbrFilter());
+        openDialog.addChoosableFileFilter(new RarFilter());
         openDialog.addChoosableFileFilter(new TarFilter());
         openDialog.addChoosableFileFilter(new ZipFilter());
         openDialog.setFileFilter(allSupportedFilter);

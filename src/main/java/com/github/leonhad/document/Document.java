@@ -212,19 +212,19 @@ public class Document {
 
         StatusBar.setStatus("Saving file...");
 
-        var fileSaver = FileFactory.getWriter(path.toFile());
-
-        var entries = new ArrayList<EntrySaver>();
-        entries.add(new EntrySaver(COMIC_INFO_XML, this::writeXml));
-
-        for (var image : imageList) {
-            try (var is = new ByteArrayInputStream(image.getImage())) {
-                entries.add(new EntrySaver(image.getFileName(), is::transferTo));
-            }
-        }
-
         return CompletableFuture.runAsync(() -> {
             try {
+                var fileSaver = FileFactory.getWriter(path.toFile());
+
+                var entries = new ArrayList<EntrySaver>();
+                entries.add(new EntrySaver(COMIC_INFO_XML, this::writeXml));
+
+                for (var image : imageList) {
+                    try (var is = new ByteArrayInputStream(image.getImage())) {
+                        entries.add(new EntrySaver(image.getFileName(), is::transferTo));
+                    }
+                }
+
                 fileSaver.save(path.toFile(), entries);
 
                 StatusBar.setStatus("File saved.");

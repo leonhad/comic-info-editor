@@ -1,5 +1,6 @@
 package com.github.leonhad.fileformat;
 
+import com.github.leonhad.fileformat.open.RarFileOpener;
 import com.github.leonhad.fileformat.open.SevenZipFileOpener;
 import com.github.leonhad.fileformat.open.TarFileOpener;
 import com.github.leonhad.fileformat.open.ZipFileOpener;
@@ -16,7 +17,7 @@ import java.util.stream.Stream;
 
 public final class FileFactory {
 
-    private static final List<FileOpener> FILE_OPENERS = List.of(new ZipFileOpener(), new SevenZipFileOpener(), new TarFileOpener());
+    private static final List<FileOpener> FILE_OPENERS = List.of(new ZipFileOpener(), new SevenZipFileOpener(), new TarFileOpener(), new RarFileOpener());
 
     private static final List<FileSaver> FILE_WRITERS = List.of(new ZipFileSaver(), new SevenZipFileSaver(), new TarFileSaver());
 
