@@ -53,7 +53,6 @@ public class RarFileOpener extends FileOpener {
                 } else if ("ComicInfo.xml".equals(name)) {
                     comicInfo = out.toByteArray();
                 }
-
             }
 
             imageList.sort(Comparator.comparing(ImageMetadata::getFileName, String.CASE_INSENSITIVE_ORDER));
