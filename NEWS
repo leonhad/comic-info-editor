@@ -1,5 +1,6 @@
 Comic Info Editor NEWS - User visible changes.
 
+2026-11-19 Reduced application size.
 2026-11-18 Added AniList search feature.
 2026-11-12 7zip and tar file saving. Fixed save option (disable when it is already saving a file).
 2026-11-11 Fixed loading performance.

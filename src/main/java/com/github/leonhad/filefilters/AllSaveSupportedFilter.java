@@ -7,7 +7,7 @@ public class AllSaveSupportedFilter extends FileFilter {
 
     @Override
     public String getDescription() {
-        return "All supported files (*.cb7, *.cbr, *.cbt, *.cbz, *.7z, *.tar, *.zip)";
+        return "All supported files (*.cb7, *.cbt, *.cbz, *.7z, *.tar, *.zip)";
     }
 
     @Override

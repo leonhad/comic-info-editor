@@ -3,17 +3,10 @@ package com.github.leonhad.fileformat.save;
 import com.github.leonhad.filefilters.Cb7Filter;
 import com.github.leonhad.filefilters.SevenZipFilter;
 import com.github.leonhad.fileformat.FileSaver;
-import lombok.RequiredArgsConstructor;
-import net.sf.sevenzipjbinding.IOutCreateCallback;
-import net.sf.sevenzipjbinding.IOutItem7z;
-import net.sf.sevenzipjbinding.ISequentialInStream;
-import net.sf.sevenzipjbinding.SevenZip;
-import net.sf.sevenzipjbinding.impl.InputStreamSequentialInStream;
-import net.sf.sevenzipjbinding.impl.OutItemFactory;
-import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream;
+import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
+import org.apache.commons.compress.archivers.sevenz.SevenZOutputFile;
 
 import java.io.*;
-import java.util.HashMap;
 import java.util.List;
 
 public class SevenZipFileSaver extends FileSaver {
@@ -28,55 +21,23 @@ public class SevenZipFileSaver extends FileSaver {
 
     @Override
     public void save(File file, List<EntrySaver> entries) throws IOException {
-        try (var randomFile = new RandomAccessFile(file, "rw");
-             var out = new RandomAccessFileOutStream(randomFile);
-             var outArchive = SevenZip.openOutArchive7z()) {
+        try (var sevenZFile = new SevenZOutputFile(file)) {
 
-            // Configure archive
-            outArchive.setLevel(5);
+            for (var entry : entries) {
+                try (var out = new ByteArrayOutputStream()) {
+                    entry.getConsumer().accept(out);
+                    var bytes = out.toByteArray();
 
-            outArchive.createArchive(out, entries.size(), new WriteCallback(entries));
-        }
-    }
+                    var sevenZEntry = new SevenZArchiveEntry();
+                    sevenZEntry.setName(entry.getName());
+                    sevenZEntry.setSize(bytes.length);
 
-    @RequiredArgsConstructor
-    private static final class WriteCallback implements IOutCreateCallback<IOutItem7z> {
-
-        private final List<EntrySaver> entries;
-
-        private final HashMap<Integer, byte[]> files = new HashMap<>();
-
-        public void setOperationResult(boolean operationResultOk) {
-            // Track each operation result here
-        }
-
-        public void setTotal(long total) {
-            // Track operation progress here
-        }
-
-        public void setCompleted(long complete) {
-            // Track operation progress here
-        }
-
-        public IOutItem7z getItemInformation(int index, OutItemFactory<IOutItem7z> outItemFactory) {
-            var item = outItemFactory.createOutItem();
-
-            item.setPropertyPath(entries.get(index).getName());
-
-            try (var out = new ByteArrayOutputStream()) {
-                entries.get(index).getConsumer().accept(out);
-                var file = out.toByteArray();
-                files.put(index, file);
-                item.setDataSize((long) file.length);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                    sevenZFile.putArchiveEntry(sevenZEntry);
+                    sevenZFile.write(bytes);
+                } finally {
+                    sevenZFile.closeArchiveEntry();
+                }
             }
-
-            return item;
-        }
-
-        public ISequentialInStream getStream(int i) {
-            return new InputStreamSequentialInStream(new ByteArrayInputStream(files.get(i)));
         }
     }
 }

@@ -18,7 +18,10 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,29 +55,25 @@ public class Document {
         StatusBar.setStatus("Loading file...");
         this.file = file;
 
-        try (var fileOpener = FileFactory.getOpener(file)) {
+        try {
+            var fileOpener = FileFactory.getOpener(file);
             this.imageList = fileOpener.getImageList();
 
             StatusBar.setFileStatus(imageList.size() + " images");
 
-            var info = fileOpener.getComicInfo(inputStream -> {
-                try {
-                    loadMetadata(inputStream);
-                    StatusBar.setStatus(FILE_LOADED);
-                } catch (IOException e) {
-                    StatusBar.setStatus(ERROR_LOADING_FILE);
-                    return false;
-                }
+            var info = fileOpener.getComicInfo();
 
-                return true;
-            });
-
-            if (!info) {
+            if (info == null) {
                 this.metadata = new Metadata();
                 rebuildMetadata();
             } else {
                 fileLoaded = true;
-                StatusBar.setStatus(FILE_LOADED);
+                try {
+                    loadMetadata(info);
+                    StatusBar.setStatus(FILE_LOADED);
+                } catch (IOException e) {
+                    StatusBar.setStatus(ERROR_LOADING_FILE);
+                }
             }
         } catch (Exception e) {
             log.log(Level.SEVERE, UNEXPECTED_ERROR_SAVING_FILE, e);
@@ -117,7 +116,7 @@ public class Document {
         return imageList.get(index).getHeight();
     }
 
-    private void loadMetadata(InputStream inputStream) throws IOException {
+    private void loadMetadata(byte[] comicInfo) throws IOException {
         this.metadata = new Metadata();
 
         try {
@@ -127,9 +126,7 @@ public class Document {
 
             var documentBuilder = factory.newDocumentBuilder();
             org.jdom2.Document document;
-            try (var buffer = new BufferedInputStream(inputStream)) {
-                document = new DOMBuilder().build(documentBuilder.parse(buffer));
-            }
+            document = new DOMBuilder().build(documentBuilder.parse(new ByteArrayInputStream(comicInfo)));
 
             var root = document.getRootElement();
             metadata.setTitle(root.getChildText("Title"));

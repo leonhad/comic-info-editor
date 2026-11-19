@@ -71,21 +71,15 @@
         </dependency>
 
         <dependency>
-            <groupId>org.kamranzafar</groupId>
-            <artifactId>jtar</artifactId>
-            <version>2.3</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.28.0</version>
         </dependency>
 
         <dependency>
-            <groupId>net.sf.sevenzipjbinding</groupId>
-            <artifactId>sevenzipjbinding</artifactId>
-            <version>23.01-2.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>net.sf.sevenzipjbinding</groupId>
-            <artifactId>sevenzipjbinding-all-platforms</artifactId>
-            <version>23.01-2.2</version>
+            <groupId>org.tukaani</groupId>
+            <artifactId>xz</artifactId>
+            <version>1.12</version>
         </dependency>
 
         <dependency>

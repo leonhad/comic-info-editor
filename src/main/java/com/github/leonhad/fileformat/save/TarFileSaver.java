@@ -3,9 +3,8 @@ package com.github.leonhad.fileformat.save;
 import com.github.leonhad.filefilters.CbtFilter;
 import com.github.leonhad.filefilters.TarFilter;
 import com.github.leonhad.fileformat.FileSaver;
-import org.kamranzafar.jtar.TarEntry;
-import org.kamranzafar.jtar.TarHeader;
-import org.kamranzafar.jtar.TarOutputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 
 import java.io.*;
 import java.util.List;
@@ -24,17 +23,22 @@ public class TarFileSaver extends FileSaver {
     public void save(File file, List<EntrySaver> entries) throws IOException {
         try (var fos = new FileOutputStream(file);
              var bos = new BufferedOutputStream(fos);
-             var tar = new TarOutputStream(bos)) {
+             var taos = new TarArchiveOutputStream(bos)) {
 
             for (var entry : entries) {
-                var buffer = new ByteArrayOutputStream();
-                entry.getConsumer().accept(buffer);
+                try (var out = new ByteArrayOutputStream()) {
+                    entry.getConsumer().accept(out);
+                    var bytes = out.toByteArray();
 
-                var header = TarHeader.createHeader(entry.getName(), buffer.size(), System.currentTimeMillis(), false, 288);
-                tar.putNextEntry(new TarEntry(header));
-                tar.write(buffer.toByteArray());
+                    var tar = new TarArchiveEntry(entry.getName());
+                    tar.setSize(bytes.length);
 
-                tar.flush();
+                    taos.putArchiveEntry(tar);
+                    taos.write(bytes);
+
+                } finally {
+                    taos.closeArchiveEntry();
+                }
             }
         }
     }
